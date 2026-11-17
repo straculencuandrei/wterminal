@@ -11,13 +11,17 @@ Accent=228,228,231,255
 TermGreen=74,222,128,255
 BarTrack=255,255,255,20
 
-; SF Pro Display Typography
-FontMono=SF Pro Display
-FontText=SF Pro Display
+; Ubuntu Typography
+FontMono=Ubuntu
+FontText=Ubuntu
 
 ; Time Format: %H:%M for 24h, %I:%M %p for 12h
 TimeFormat=%H:%M
 DateFormat=%a %Y-%m-%d
+
+; Antigravity token telemetry limits (context window / rolling 24h budget)
+AgyContextLimit=1000000
+AgyDailyLimit=20000000
 
 ; Auto-managed display scale & layout state (updated by Layout.lua / reset-widgets.ps1)
 S=1.00

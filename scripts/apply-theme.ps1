@@ -160,10 +160,19 @@ Draggable=1
 SnapEdges=1
 KeepOnScreen=1
 
-[AmoledTerminal\TerminalDock]
+[AmoledTerminal\AgyTokens]
 Active=1
 WindowX=(#WORKAREAX#+#WORKAREAWIDTH#-296)
 WindowY=(#WORKAREAY#+394)
+AlwaysOnTop=0
+Draggable=1
+SnapEdges=1
+KeepOnScreen=1
+
+[AmoledTerminal\TerminalDock]
+Active=1
+WindowX=(#WORKAREAX#+#WORKAREAWIDTH#-296)
+WindowY=(#WORKAREAY#+528)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1

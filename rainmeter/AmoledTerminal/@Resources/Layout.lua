@@ -71,7 +71,7 @@ local function computeScale(ww, wh, sy, sh, wy)
     local bottomReserved = math.max(0, screenBottom - workBottom)
     local hasExternalBottomDock = (bottomReserved < 36)
     local dockPerUnit = hasExternalBottomDock and 96 or 18
-    local maxVerticalRatio = (wh - 16) / (16 + 476 + 14 + 34 + dockPerUnit)
+    local maxVerticalRatio = (wh - 16) / (16 + 554 + 14 + 34 + dockPerUnit)
     if maxVerticalRatio < s then
         s = clamp(maxVerticalRatio, 0.68, 1.50)
     end
@@ -152,6 +152,7 @@ local function applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, s, activateAll)
     local hSys = round(122 * s)
     local hGpu = round(110 * s)
     local hPwr = round(110 * s)
+    local hAgy = round(122 * s)
 
     local fftW = 2 * round(12 * s) + 24 * math.max(2, round(8 * s)) + 23 * math.max(1, round(4 * s))
     local fftH = round(34 * s)
@@ -190,13 +191,14 @@ local function applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, s, activateAll)
     place("AmoledTerminal\\SysPill", "SysPill.ini", rightX, topY, false)
     place("AmoledTerminal\\GpuThermals", "GpuThermals.ini", rightX, topY + hSys + gapY, false)
     place("AmoledTerminal\\PowerAudio", "PowerAudio.ini", rightX, topY + hSys + gapY + hGpu + gapY, false)
-    place("AmoledTerminal\\TerminalDock", "TerminalDock.ini", rightX, topY + hSys + gapY + hGpu + gapY + hPwr + gapY, false)
+    place("AmoledTerminal\\AgyTokens", "AgyTokens.ini", rightX, topY + hSys + gapY + hGpu + gapY + hPwr + gapY, false)
+    place("AmoledTerminal\\TerminalDock", "TerminalDock.ini", rightX, topY + hSys + gapY + hGpu + gapY + hPwr + gapY + hAgy + gapY, false)
 
     place("AmoledTerminal\\AudioFFT", "AudioFFT.ini", fftX, fftY, false)
 
     if active["AmoledTerminal\\Settings"] then
         local setW = round(280 * s)
-        local setH = round(328 * s)
+        local setH = round(352 * s)
         local setX = wx + math.floor((ww - setW) / 2)
         local setY = wy + math.floor((wh - setH) / 2)
         SKIN:Bang("!Move", tostring(setX), tostring(setY), "AmoledTerminal\\Settings")
