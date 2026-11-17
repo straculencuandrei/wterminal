@@ -203,6 +203,42 @@ local function applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, s, activateAll)
         local setY = wy + math.floor((wh - setH) / 2)
         SKIN:Bang("!Move", tostring(setX), tostring(setY), "AmoledTerminal\\Settings")
     end
+
+    if active["AmoledTerminal\\AgyTokensExpand"] then
+        local expW = round(304 * s)
+        local expH = round(356 * s)
+        local agyY = topY + hSys + gapY + hGpu + gapY + hPwr + gapY
+        local expX = math.max(wx + marginX, rightX - expW - gapY)
+        local expY = clamp(agyY - math.floor((expH - hAgy) / 2), topY, workBottom - dockClear - expH)
+        SKIN:Bang("!Move", tostring(expX), tostring(expY), "AmoledTerminal\\AgyTokensExpand")
+        SKIN:Bang("!ZPos", "1", "AmoledTerminal\\AgyTokensExpand")
+    end
+end
+
+function PositionExpand()
+    local wx, wy, ww, wh, sx, sy, sw, sh = getMonitorMetrics()
+    if ww <= 0 or wh <= 0 then return end
+    local s = tonumber(SKIN:GetVariable("S", "1")) or 1
+    local marginX = math.max(12, round(24 * s))
+    local topY = wy + math.max(12, round(16 * s))
+    local gapY = math.max(8, round(12 * s))
+    local cardW = round(272 * s)
+    local rightX = wx + ww - cardW - marginX
+    local hSys = round(122 * s)
+    local hGpu = round(110 * s)
+    local hPwr = round(110 * s)
+    local hAgy = round(122 * s)
+    local expW = round(304 * s)
+    local expH = round(356 * s)
+    local workBottom = wy + wh
+    local screenBottom = sy + sh
+    local bottomReserved = math.max(0, screenBottom - workBottom)
+    local dockClear = (bottomReserved < 36) and math.max(82, round(96 * s)) or math.max(14, round(18 * s))
+    local agyY = topY + hSys + gapY + hGpu + gapY + hPwr + gapY
+    local expX = math.max(wx + marginX, rightX - expW - gapY)
+    local expY = clamp(agyY - math.floor((expH - hAgy) / 2), topY, workBottom - dockClear - expH)
+    SKIN:Bang("!Move", tostring(expX), tostring(expY), "AmoledTerminal\\AgyTokensExpand")
+    SKIN:Bang("!ZPos", "1", "AmoledTerminal\\AgyTokensExpand")
 end
 
 local tickCount = 0

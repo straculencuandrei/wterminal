@@ -1,0 +1,8 @@
+{
+  "_note": "Optional Antigravity /usage tier snapshot. Put pct_left (0-100) and either resets_at (ISO-8601 like 2026-11-21T00:30:00+02:00) or resets_in (e.g. '3d 6h'). Set null for live '--' state.",
+  "gemini_weekly": { "pct_left": null, "resets_at": "", "resets_in": "" },
+  "gemini_5h":     { "pct_left": null, "resets_at": "", "resets_in": "" },
+  "claude_weekly": { "pct_left": null, "resets_at": "", "resets_in": "" },
+  "claude_5h":     { "pct_left": null, "resets_at": "", "resets_in": "" },
+  "argon_weekly":  { "pct_left": null, "resets_at": "", "resets_in": "" }
+}

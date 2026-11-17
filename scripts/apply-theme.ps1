@@ -84,7 +84,7 @@ Get-ChildItem $rainmeterDest -Recurse -Include '*.ini' | ForEach-Object {
     $txt = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
     [System.IO.File]::WriteAllText($_.FullName, $txt, [System.Text.Encoding]::Unicode)
 }
-Get-ChildItem $rainmeterDest -Recurse -Include '*.inc','*.lua' | ForEach-Object {
+Get-ChildItem $rainmeterDest -Recurse -Include '*.inc','*.lua','*.py','*.json' | ForEach-Object {
     $txt = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
     [System.IO.File]::WriteAllText($_.FullName, $txt, [System.Text.UTF8Encoding]::new($false))
 }
