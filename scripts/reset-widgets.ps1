@@ -1,18 +1,36 @@
 <#
 .SYNOPSIS
     Snaps all 9 AmoledTerminal Rainmeter widgets cleanly onto the current display
-    with resolution/DPI-adaptive scaling and WorkArea-safe margins.
+    with crisp DPI awareness, adaptive scaling, and WorkArea-safe margins.
 #>
 [CmdletBinding()]
 param(
     [switch]$OpenSettings
 )
 
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class WtermDpiHelper {
+    [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+    [DllImport("shcore.dll")] public static extern int GetProcessDpiAwareness(IntPtr hprocess, out int awareness);
+}
+"@
+[void][WtermDpiHelper]::SetProcessDPIAware()
 Add-Type -AssemblyName System.Windows.Forms
+
 $rainmeterExe = Join-Path $env:ProgramFiles 'Rainmeter\Rainmeter.exe'
 if (-not (Test-Path $rainmeterExe)) {
     Write-Error "Rainmeter.exe not found at $rainmeterExe"
     exit 1
+}
+
+# Ensure Rainmeter renders crisp native pixels on high-DPI laptop displays (125%/150%)
+$layersKey = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers'
+New-Item -Path $layersKey -Force | Out-Null
+$curLayer = (Get-ItemProperty -Path $layersKey -Name $rainmeterExe -ErrorAction SilentlyContinue).$rainmeterExe
+if ($curLayer -ne '~ HIGHDPIAWARE') {
+    Set-ItemProperty -Path $layersKey -Name $rainmeterExe -Value '~ HIGHDPIAWARE' -Type String
 }
 
 $scr = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
@@ -35,7 +53,7 @@ $workBottom = $wy + $wh
 $screenBottom = $sy + $sh
 $bottomReserved = [Math]::Max(0, $screenBottom - $workBottom)
 $hasExternalBottomDock = ($bottomReserved -lt 36)
-$dockPerUnit = if ($hasExternalBottomDock) { 86 } else { 16 }
+$dockPerUnit = if ($hasExternalBottomDock) { 96 } else { 18 }
 
 $maxVerticalRatio = ($wh - 16) / (16 + 476 + 14 + 34 + $dockPerUnit)
 if ($maxVerticalRatio -lt $s) {
@@ -67,8 +85,18 @@ if (Test-Path $varPath) {
     [System.IO.File]::WriteAllText($varPath, $vtxt, [System.Text.UTF8Encoding]::new($false))
 }
 
-if (-not (Get-Process -Name 'Rainmeter' -ErrorAction SilentlyContinue)) {
-    Start-Process explorer.exe -ArgumentList "shell:AppsFolder\{6D809377-6AF0-444B-8957-A3773F02200E}\Rainmeter\Rainmeter.exe"
+$rmProc = Get-Process -Name 'Rainmeter' -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($rmProc) {
+    $aw = -1
+    [void][WtermDpiHelper]::GetProcessDpiAwareness($rmProc.Handle, [ref]$aw)
+    if ($aw -eq 0) {
+        Stop-Process -Name 'Rainmeter' -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+        $rmProc = $null
+    }
+}
+if (-not $rmProc) {
+    Start-Process -FilePath $rainmeterExe
     Start-Sleep -Seconds 2
 }
 
@@ -86,10 +114,10 @@ $hSys = [int][Math]::Round(122 * $s)
 $hGpu = [int][Math]::Round(110 * $s)
 $hPwr = [int][Math]::Round(110 * $s)
 
-$fftW = [int][Math]::Round(308 * $s)
+$fftW = 2 * [int][Math]::Round(12 * $s) + 24 * [Math]::Max(2, [int][Math]::Round(8 * $s)) + 23 * [Math]::Max(1, [int][Math]::Round(4 * $s))
 $fftH = [int][Math]::Round(34 * $s)
 $fftX = $wx + [int][Math]::Floor(($ww - $fftW) / 2)
-$dockClear = if ($hasExternalBottomDock) { [Math]::Max(74, [int][Math]::Round(86 * $s)) } else { [Math]::Max(14, [int][Math]::Round(18 * $s)) }
+$dockClear = if ($hasExternalBottomDock) { [Math]::Max(82, [int][Math]::Round(96 * $s)) } else { [Math]::Max(14, [int][Math]::Round(18 * $s)) }
 $fftY = $workBottom - $dockClear - $fftH
 
 $layout = @(
@@ -112,6 +140,8 @@ foreach ($w in $layout) {
     & $rainmeterExe !Move $w.X $w.Y "$($w.Cfg)"
     & $rainmeterExe !ZPos 0 "$($w.Cfg)"
 }
+& $rainmeterExe !Draggable 0 'AmoledTerminal\AudioFFT'
+& $rainmeterExe !ClickThrough 1 'AmoledTerminal\AudioFFT'
 
 if ($OpenSettings) {
     $setW = [int][Math]::Round(280 * $s)

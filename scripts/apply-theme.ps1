@@ -172,14 +172,23 @@ KeepOnScreen=1
 [AmoledTerminal\AudioFFT]
 Active=1
 WindowX=(#WORKAREAX#+#WORKAREAWIDTH#/2-154)
-WindowY=(#WORKAREAY#+#WORKAREAHEIGHT#-120)
+WindowY=(#WORKAREAY#+#WORKAREAHEIGHT#-130)
 AlwaysOnTop=0
-Draggable=1
+Draggable=0
+ClickThrough=1
 SnapEdges=1
 KeepOnScreen=1
 "@
     $rainmeterIni | Set-Content -Path (Join-Path $rmDir 'Rainmeter.ini') -Encoding Unicode
     Write-Host '==> Wrote WorkArea-adaptive Rainmeter.ini widget layout.' -ForegroundColor Cyan
+}
+
+# Ensure Rainmeter renders crisp native DPI pixels (prevents blurry 125%/150% DWM bitmap scaling)
+$rmExePath = Join-Path $env:ProgramFiles 'Rainmeter\Rainmeter.exe'
+if (Test-Path $rmExePath) {
+    $layersKey = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers'
+    New-Item -Path $layersKey -Force | Out-Null
+    Set-ItemProperty -Path $layersKey -Name $rmExePath -Value '~ HIGHDPIAWARE' -Type String
 }
 
 # 2. Deploy Flow Launcher & Seelen UI themes

@@ -70,7 +70,7 @@ local function computeScale(ww, wh, sy, sh, wy)
     local screenBottom = sy + sh
     local bottomReserved = math.max(0, screenBottom - workBottom)
     local hasExternalBottomDock = (bottomReserved < 36)
-    local dockPerUnit = hasExternalBottomDock and 86 or 16
+    local dockPerUnit = hasExternalBottomDock and 96 or 18
     local maxVerticalRatio = (wh - 16) / (16 + 476 + 14 + 34 + dockPerUnit)
     if maxVerticalRatio < s then
         s = clamp(maxVerticalRatio, 0.68, 1.50)
@@ -153,14 +153,14 @@ local function applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, s, activateAll)
     local hGpu = round(110 * s)
     local hPwr = round(110 * s)
 
-    local fftW = round(308 * s)
+    local fftW = 2 * round(12 * s) + 24 * math.max(2, round(8 * s)) + 23 * math.max(1, round(4 * s))
     local fftH = round(34 * s)
     local fftX = wx + math.floor((ww - fftW) / 2)
 
     local workBottom = wy + wh
     local screenBottom = sy + sh
     local bottomReserved = math.max(0, screenBottom - workBottom)
-    local dockClear = (bottomReserved < 36) and math.max(74, round(86 * s)) or math.max(14, round(18 * s))
+    local dockClear = (bottomReserved < 36) and math.max(82, round(96 * s)) or math.max(14, round(18 * s))
     local fftY = workBottom - dockClear - fftH
 
     local active = activateAll and {} or readActiveConfigs()
