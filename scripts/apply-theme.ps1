@@ -200,12 +200,17 @@ if (Test-Path $seelenSrc) {
     }
     $seelenCfgPath = Join-Path $env:APPDATA 'com.seelen.seelen-ui\settings.json'
     if (Test-Path $seelenCfgPath) {
-        $scfg = Get-Content $seelenCfgPath -Raw | ConvertFrom-Json
+        $scfg = [System.IO.File]::ReadAllText($seelenCfgPath) | ConvertFrom-Json
         if ($scfg.byWidget.'@seelen/wallpaper-manager') {
             $scfg.byWidget.'@seelen/wallpaper-manager'.enabled = $false
         }
         $scfg | Add-Member -NotePropertyName 'suspendOnGameMode' -NotePropertyValue $true -Force
-        $scfg | ConvertTo-Json -Depth 12 | Set-Content -Path $seelenCfgPath -Encoding UTF8
+        # Write UTF-8 without BOM; Seelen UI's Rust serde_json parser rejects a leading BOM
+        [System.IO.File]::WriteAllText(
+            $seelenCfgPath,
+            ($scfg | ConvertTo-Json -Depth 12),
+            [System.Text.UTF8Encoding]::new($false)
+        )
     }
 }
 
