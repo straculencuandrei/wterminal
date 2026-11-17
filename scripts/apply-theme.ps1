@@ -360,9 +360,10 @@ if ($ApplyTerminalTheme) {
         }
     }
 
-    # Route Start Menu terminal shortcuts cleanly into Windows Terminal via wt-open.vbs
+    # Route Start Menu terminal shortcuts directly to wt.exe (GUI subsystem - avoids wscript/ShellExecute stalls)
     $ws = New-Object -ComObject WScript.Shell
     $wtExe = Get-Item 'C:\Program Files\WindowsApps\Microsoft.WindowsTerminal_*\WindowsTerminal.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+    $wtAlias = "$env:LOCALAPPDATA\Microsoft\WindowsApps\wt.exe"
     $shortcuts = @(
         @{ Path = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\System Tools\Command Prompt.lnk"; Guid = '{0caa0dad-35be-5f56-a8ff-afceeeaa6101}'; Icon = "$env:WINDIR\System32\cmd.exe,0" },
         @{ Path = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\cmd.lnk"; Guid = '{0caa0dad-35be-5f56-a8ff-afceeeaa6101}'; Icon = "$env:WINDIR\System32\cmd.exe,0" },
@@ -374,8 +375,13 @@ if ($ApplyTerminalTheme) {
         $parent = Split-Path -Parent $item.Path
         New-Item -ItemType Directory -Path $parent -Force | Out-Null
         $sc = $ws.CreateShortcut($item.Path)
-        $sc.TargetPath = "$env:WINDIR\System32\wscript.exe"
-        $sc.Arguments = "`"$cfgDir\wt-open.vbs`" `"$($item.Guid)`""
+        if (Test-Path $wtAlias) {
+            $sc.TargetPath = $wtAlias
+            $sc.Arguments = "-w new -p `"$($item.Guid)`""
+        } else {
+            $sc.TargetPath = "$env:WINDIR\System32\wscript.exe"
+            $sc.Arguments = "`"$cfgDir\wt-open.vbs`" `"$($item.Guid)`""
+        }
         if ($item.Icon) {
             $sc.IconLocation = $item.Icon
         } elseif ($wtExe) {
