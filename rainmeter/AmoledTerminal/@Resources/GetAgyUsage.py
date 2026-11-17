@@ -35,7 +35,7 @@ def parse_tier(entry: dict, fallback_pct: int, fallback_sub: str) -> tuple[str, 
         pct = entry.get("pct_left")
         resets_at = (entry.get("resets_at") or "").strip()
         resets_in = (entry.get("resets_in") or "").strip()
-        sub = fallback_sub
+        sub = ""
         if resets_at:
             try:
                 target = datetime.datetime.fromisoformat(resets_at.replace("Z", "+00:00"))
