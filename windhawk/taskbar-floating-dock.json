@@ -1,0 +1,17 @@
+{
+  "theme": "DockLike",
+  "controlStyles[0].target": "Taskbar.TaskbarFrame > Grid#RootGrid",
+  "controlStyles[0].styles[0]": "Margin=0,2,0,6",
+  "controlStyles[0].styles[1]": "CornerRadius=12",
+  "controlStyles[0].styles[2]": "BorderThickness=1",
+  "controlStyles[0].styles[3]": "BorderBrush:=<SolidColorBrush Color=\"#22FFFFFF\" />",
+  "controlStyles[1].target": "Taskbar.TaskbarFrame > Grid#RootGrid > Taskbar.TaskbarBackground > Grid",
+  "controlStyles[1].styles[0]": "CornerRadius=12",
+  "controlStyles[1].styles[1]": "Background:=<AcrylicBrush TintColor=\"#050507\" TintOpacity=\"0.82\" FallbackColor=\"#D9050507\" />",
+  "controlStyles[2].target": "Grid#SystemTrayFrameGrid",
+  "controlStyles[2].styles[0]": "Margin=6,2,8,6",
+  "controlStyles[2].styles[1]": "CornerRadius=10",
+  "controlStyles[2].styles[2]": "BorderThickness=1",
+  "controlStyles[2].styles[3]": "BorderBrush:=<SolidColorBrush Color=\"#1FFFFFFF\" />",
+  "controlStyles[2].styles[4]": "Background:=<AcrylicBrush TintColor=\"#050507\" TintOpacity=\"0.82\" FallbackColor=\"#D9050507\" />"
+}

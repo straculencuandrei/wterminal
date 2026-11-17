@@ -1,0 +1,52 @@
+{
+  "scheme": {
+    "name": "AMOLED Terminal",
+    "background": "#000000",
+    "foreground": "#E4E4E7",
+    "cursorColor": "#4ADE80",
+    "selectionBackground": "#27272A",
+    "black": "#09090B",
+    "red": "#F87171",
+    "green": "#4ADE80",
+    "yellow": "#FBBF24",
+    "blue": "#A1A1AA",
+    "purple": "#C084FC",
+    "cyan": "#D4D4D8",
+    "white": "#E4E4E7",
+    "brightBlack": "#52525B",
+    "brightRed": "#FCA5A5",
+    "brightGreen": "#86EFAC",
+    "brightYellow": "#FDE68A",
+    "brightBlue": "#D4D4D8",
+    "brightPurple": "#D8B4FE",
+    "brightCyan": "#F4F4F5",
+    "brightWhite": "#FFFFFF"
+  },
+  "theme": {
+    "name": "AMOLED Dark",
+    "tab": {
+      "background": "#121216F0",
+      "unfocusedBackground": "#00000000",
+      "showCloseButton": "hover"
+    },
+    "tabRow": {
+      "background": "#050507B8",
+      "unfocusedBackground": "#050507E0"
+    },
+    "window": {
+      "applicationTheme": "dark",
+      "useMica": false
+    }
+  },
+  "profileDefaults": {
+    "colorScheme": "AMOLED Terminal",
+    "useAcrylic": true,
+    "opacity": 78,
+    "padding": "14, 14, 14, 14",
+    "cursorShape": "bar",
+    "font": {
+      "face": "JetBrainsMono NF",
+      "size": 11
+    }
+  }
+}

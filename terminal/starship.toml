@@ -1,0 +1,80 @@
+# AMOLED Terminal — Starship Prompt (~/.config/starship.toml)
+# Customize modules, icons, or colors anytime and changes apply on the next prompt.
+
+"$schema" = 'https://starship.rs/config-schema.json'
+add_newline = true
+command_timeout = 1000
+scan_timeout = 500
+
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$python\
+$rust\
+$cmd_duration\
+$line_break\
+$character"""
+
+[username]
+show_always = false
+style_user = "bold #A1A1AA"
+style_root = "bold #F87171"
+format = "[$user]($style) "
+
+[hostname]
+ssh_only = true
+style = "bold #71717A"
+format = "[@$hostname]($style) "
+
+[directory]
+style = "bold #F4F4F5"
+truncation_length = 4
+truncation_symbol = "…/"
+read_only = " 󰌾"
+read_only_style = "#F87171"
+format = "[󰉋 $path]($style)[$read_only]($read_only_style) "
+
+[git_branch]
+symbol = " "
+style = "bold #A1A1AA"
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+style = "#4ADE80"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+modified = "!${count}"
+untracked = "?${count}"
+staged = "+${count}"
+deleted = "✘${count}"
+format = "([$all_status$ahead_behind]($style) )"
+
+[nodejs]
+symbol = " "
+style = "#A1A1AA"
+format = "[$symbol($version )]($style)"
+
+[python]
+symbol = " "
+style = "#A1A1AA"
+format = "[$symbol($version )]($style)"
+
+[rust]
+symbol = " "
+style = "#A1A1AA"
+format = "[$symbol($version )]($style)"
+
+[cmd_duration]
+min_time = 1500
+style = "#71717A"
+format = "took [$duration]($style) "
+
+[character]
+success_symbol = "[»](bold #4ADE80)"
+error_symbol = "[»](bold #F87171)"
+vimcmd_symbol = "[«](bold #E4E4E7)"
