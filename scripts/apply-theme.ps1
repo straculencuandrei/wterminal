@@ -249,7 +249,20 @@ if ($ApplyTerminalTheme) {
     Copy-Item (Join-Path $RepoRoot 'terminal\profile.ps1') (Join-Path $ps7Dir 'Microsoft.PowerShell_profile.ps1') -Force
     Copy-Item (Join-Path $RepoRoot 'terminal\profile.ps1') (Join-Path $ps5Dir 'Microsoft.PowerShell_profile.ps1') -Force
     Copy-Item (Join-Path $RepoRoot 'scripts\reset-widgets.ps1') (Join-Path $cfgDir 'reset-widgets.ps1') -Force
-    Write-Host '==> Deployed Starship, Fastfetch, Clink, cmd-init, wt-open, reset-widgets, and PowerShell profiles.' -ForegroundColor Cyan
+    Copy-Item (Join-Path $RepoRoot 'scripts\startup-widgets.ps1') (Join-Path $cfgDir 'startup-widgets.ps1') -Force
+    Copy-Item (Join-Path $RepoRoot 'scripts\startup-widgets.vbs') (Join-Path $cfgDir 'startup-widgets.vbs') -Force
+    Write-Host '==> Deployed Starship, Fastfetch, Clink, cmd-init, wt-open, reset-widgets, startup-widgets, and PowerShell profiles.' -ForegroundColor Cyan
+
+    # Register silent interactive logon task for Rainmeter (waits for Wallpaper Engine & Seelen UI)
+    $vbsStartup = Join-Path $cfgDir 'startup-widgets.vbs'
+    if (Test-Path "$env:ProgramFiles\Rainmeter\Rainmeter.exe") {
+        $stAction = New-ScheduledTaskAction -Execute "$env:WINDIR\System32\wscript.exe" -Argument "`"$vbsStartup`""
+        $stTrigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+        $stTrigger.Delay = 'PT3S'
+        $stPrincipal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
+        $stSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 2)
+        Register-ScheduledTask -TaskName 'WterminalRainmeterStartup' -Action $stAction -Trigger $stTrigger -Principal $stPrincipal -Settings $stSettings -Force | Out-Null
+    }
 
     # Safe cmd AutoRun (skips /c scripts cleanly)
     $cmdProcKey = 'HKCU:\Software\Microsoft\Command Processor'
