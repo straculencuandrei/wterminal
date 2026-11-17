@@ -211,7 +211,7 @@ local function applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, s, activateAll)
         local expX = math.max(wx + marginX, rightX - expW - gapY)
         local expY = clamp(agyY - math.floor((expH - hAgy) / 2), topY, workBottom - dockClear - expH)
         SKIN:Bang("!Move", tostring(expX), tostring(expY), "AmoledTerminal\\AgyTokensExpand")
-        SKIN:Bang("!ZPos", "1", "AmoledTerminal\\AgyTokensExpand")
+        SKIN:Bang("!ZPos", "0", "AmoledTerminal\\AgyTokensExpand")
     end
 end
 
@@ -238,7 +238,7 @@ function PositionExpand()
     local expX = math.max(wx + marginX, rightX - expW - gapY)
     local expY = clamp(agyY - math.floor((expH - hAgy) / 2), topY, workBottom - dockClear - expH)
     SKIN:Bang("!Move", tostring(expX), tostring(expY), "AmoledTerminal\\AgyTokensExpand")
-    SKIN:Bang("!ZPos", "1", "AmoledTerminal\\AgyTokensExpand")
+    SKIN:Bang("!ZPos", "0", "AmoledTerminal\\AgyTokensExpand")
 end
 
 local tickCount = 0

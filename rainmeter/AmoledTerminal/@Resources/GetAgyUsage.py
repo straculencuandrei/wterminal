@@ -26,51 +26,47 @@ def fmt_dur(seconds: float) -> str:
     return f"{mins}m"
 
 
-def parse_tier(entry: dict, fallback_sub: str) -> tuple[str, int, str, str]:
-    """Returns (pct_label, ring_val, color_rgb, reset_line)."""
-    green = "74,222,128,255"
-    amber = "245,158,11,255"
-    muted = "255,255,255,24"
-    if not isinstance(entry, dict):
-        return "--% left", 0, muted, fallback_sub
+def color_for_pct(pval: int) -> str:
+    return "245,158,11,255" if pval <= 25 else "74,222,128,255"
 
-    pct = entry.get("pct_left")
-    resets_at = (entry.get("resets_at") or "").strip()
-    resets_in = (entry.get("resets_in") or "").strip()
 
-    sub = fallback_sub
-    if resets_at:
+def parse_tier(entry: dict, fallback_pct: int, fallback_sub: str) -> tuple[str, int, str, str]:
+    if isinstance(entry, dict) and entry.get("pct_left") is not None:
+        pct = entry.get("pct_left")
+        resets_at = (entry.get("resets_at") or "").strip()
+        resets_in = (entry.get("resets_in") or "").strip()
+        sub = fallback_sub
+        if resets_at:
+            try:
+                target = datetime.datetime.fromisoformat(resets_at.replace("Z", "+00:00"))
+                now_dt = datetime.datetime.now(target.tzinfo)
+                rem_s = (target - now_dt).total_seconds()
+                if rem_s <= 0:
+                    pct = 100
+                    sub = "Reset ready"
+                else:
+                    sub = f"Resets in {fmt_dur(rem_s)}"
+            except Exception:
+                if resets_in:
+                    sub = f"Resets in {resets_in}"
+        elif resets_in:
+            sub = f"Resets in {resets_in}"
         try:
-            target = datetime.datetime.fromisoformat(resets_at.replace("Z", "+00:00"))
-            now_dt = datetime.datetime.now(target.tzinfo)
-            rem_s = (target - now_dt).total_seconds()
-            if rem_s <= 0:
-                pct = 100
-                sub = "Reset ready"
-            else:
-                sub = f"Resets in {fmt_dur(rem_s)}"
+            pval = max(0, min(100, int(round(float(pct)))))
+            return f"{pval}% left", pval, color_for_pct(pval), sub
         except Exception:
-            if resets_in:
-                sub = f"Resets in {resets_in}"
-    elif resets_in:
-        sub = f"Resets in {resets_in}"
+            pass
 
-    if pct is None:
-        return "--% left", 0, muted, sub
-
-    try:
-        pval = max(0, min(100, int(round(float(pct)))))
-    except Exception:
-        return "--% left", 0, muted, sub
-
-    col = amber if pval <= 25 else green
-    return f"{pval}% left", pval, col, sub
+    pval = max(0, min(100, int(fallback_pct)))
+    return f"{pval}% left", pval, color_for_pct(pval), fallback_sub
 
 
 def main() -> None:
     ctx_limit = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 1_000_000
     day_limit = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 20_000_000
     mode = sys.argv[3] if len(sys.argv) > 3 else "compact"
+    h5_limit = int(sys.argv[4]) if len(sys.argv) > 4 and sys.argv[4].isdigit() else 5_000_000
+    wk_limit = int(sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5].isdigit() else 30_000_000
 
     home = os.path.expanduser("~")
     patterns = [
@@ -114,6 +110,9 @@ def main() -> None:
     tok_5h = 0
     tok_24h = 0
     tok_7d = 0
+    oldest_5h = None
+    oldest_7d = None
+
     for path in files:
         try:
             mtime = os.path.getmtime(path)
@@ -135,10 +134,14 @@ def main() -> None:
                                 pass
                         if ts >= cutoff_7d:
                             tok_7d += net
+                            if oldest_7d is None or ts < oldest_7d:
+                                oldest_7d = ts
                         if ts >= cutoff_24h:
                             tok_24h += net
                         if ts >= cutoff_5h:
                             tok_5h += net
+                            if oldest_5h is None or ts < oldest_5h:
+                                oldest_5h = ts
                     except Exception:
                         pass
         except Exception:
@@ -147,13 +150,20 @@ def main() -> None:
     ctx_rem = max(0, ctx_limit - active_spent)
     spent_pct = round(min(100.0, (active_spent / ctx_limit) * 100.0)) if ctx_limit > 0 else 0
     rem_pct = max(0, 100 - spent_pct)
+
     day_pct = round(min(100.0, (tok_24h / day_limit) * 100.0)) if day_limit > 0 else 0
     day_rem = max(0, day_limit - tok_24h)
 
+    h5_rem_pct = max(0, 100 - round(min(100.0, (tok_5h / h5_limit) * 100.0))) if h5_limit > 0 else 100
+    wk_rem_pct = max(0, 100 - round(min(100.0, (tok_7d / wk_limit) * 100.0))) if wk_limit > 0 else 100
+    h5_reset = f"Resets in {fmt_dur((oldest_5h + 5 * 3600) - now)}" if oldest_5h else "Window clear"
+    wk_reset = f"Resets in {fmt_dur((oldest_7d + 7 * 86400) - now)}" if oldest_7d else "Window clear"
+
     if mode != "expand":
+        # Trailing pipe guarantees the final regex field always terminates cleanly
         print(
             f"{rem_pct}|{fmt_tok(active_spent)} / {fmt_tok(ctx_limit)}|{spent_pct}|{fmt_tok(ctx_rem)}|"
-            f"{fmt_tok(tok_24h)} / {fmt_tok(day_limit)}|{day_pct}|{fmt_tok(day_rem)}"
+            f"{fmt_tok(tok_24h)} / {fmt_tok(day_limit)}|{day_pct}|{fmt_tok(day_rem)}|"
         )
         return
 
@@ -166,27 +176,64 @@ def main() -> None:
         except Exception:
             q = {}
 
-    gw_lbl, gw_val, gw_col, gw_sub = parse_tier(q.get("gemini_weekly"), "Sync /usage via [edit]")
-    g5_lbl, g5_val, g5_col, g5_sub = parse_tier(q.get("gemini_5h"), "Sync /usage via [edit]")
-    cw_lbl, cw_val, cw_col, cw_sub = parse_tier(q.get("claude_weekly"), "Sync /usage via [edit]")
-    c5_lbl, c5_val, c5_col, c5_sub = parse_tier(q.get("claude_5h"), "Sync /usage via [edit]")
-    aw_lbl, aw_val, aw_col, aw_sub = parse_tier(q.get("argon_weekly"), "Weekly limit (sync via [edit])")
-    if aw_sub.startswith("Resets in "):
-        aw_sub = "Weekly limit, r" + aw_sub[1:]
+    has_manual = any(
+        isinstance(q.get(k), dict) and q[k].get("pct_left") is not None
+        for k in ("gemini_weekly", "gemini_5h", "claude_weekly", "claude_5h", "argon_weekly")
+    )
+
+    if has_manual:
+        h1, h2, h3 = "Gemini Models", "Claude and GPT models", "Gemini 4 Argon"
+        r1_lbl, r1_val, r1_col, r1_sub = parse_tier(q.get("gemini_weekly"), wk_rem_pct, wk_reset)
+        r2_lbl, r2_val, r2_col, r2_sub = parse_tier(q.get("gemini_5h"), h5_rem_pct, h5_reset)
+        r3_lbl, r3_val, r3_col, r3_sub = parse_tier(q.get("claude_weekly"), wk_rem_pct, wk_reset)
+        r4_lbl, r4_val, r4_col, r4_sub = parse_tier(q.get("claude_5h"), h5_rem_pct, h5_reset)
+        r5_lbl, r5_val, r5_col, r5_sub = parse_tier(q.get("argon_weekly"), rem_pct, wk_reset)
+        if r5_sub.startswith("Resets in "):
+            r5_sub = "Weekly limit, r" + r5_sub[1:]
+        r1_title, r2_title, r3_title, r4_title = "Weekly limit", "5h limit", "Weekly limit", "5h limit"
+    else:
+        # Honest live rolling telemetry from local Antigravity transcripts
+        h1, h2, h3 = "Gemini & All Local Sessions", "Rolling Token Budgets", "Active Conversation"
+        r1_title, r1_lbl, r1_val, r1_col, r1_sub = (
+            "Weekly limit (7d)",
+            f"{wk_rem_pct}% left", wk_rem_pct, color_for_pct(wk_rem_pct),
+            f"{wk_reset} ({fmt_tok(tok_7d)} / {fmt_tok(wk_limit)})",
+        )
+        r2_title, r2_lbl, r2_val, r2_col, r2_sub = (
+            "5h limit",
+            f"{h5_rem_pct}% left", h5_rem_pct, color_for_pct(h5_rem_pct),
+            f"{h5_reset} ({fmt_tok(tok_5h)} / {fmt_tok(h5_limit)})",
+        )
+        day_rem_pct = max(0, 100 - day_pct)
+        r3_title, r3_lbl, r3_val, r3_col, r3_sub = (
+            "24h limit",
+            f"{day_rem_pct}% left", day_rem_pct, color_for_pct(day_rem_pct),
+            f"Spent {fmt_tok(tok_24h)} / {fmt_tok(day_limit)}",
+        )
+        r4_title, r4_lbl, r4_val, r4_col, r4_sub = (
+            "Context window",
+            f"{rem_pct}% left", rem_pct, color_for_pct(rem_pct),
+            f"Spent {fmt_tok(active_spent)} / {fmt_tok(ctx_limit)}",
+        )
+        r5_lbl, r5_val, r5_col, r5_sub = (
+            f"{rem_pct}% left", rem_pct, color_for_pct(rem_pct),
+            f"Remaining {fmt_tok(ctx_rem)} tokens in chat",
+        )
 
     local_ctx = f"ctx: {fmt_tok(active_spent)} / {fmt_tok(ctx_limit)} ({rem_pct}% left)"
-    local_win = f"local 5h: {fmt_tok(tok_5h)}  |  7d: {fmt_tok(tok_7d)}"
+    local_win = f"5h: {fmt_tok(tok_5h)}  \u00b7  24h: {fmt_tok(tok_24h)}  \u00b7  7d: {fmt_tok(tok_7d)}"
 
-    # 22 pipe-delimited fields for AgyTokensExpand.ini
+    # 29 pipe-delimited fields with trailing pipe
     fields = [
-        gw_lbl, str(gw_val), gw_col, gw_sub,
-        g5_lbl, str(g5_val), g5_col, g5_sub,
-        cw_lbl, str(cw_val), cw_col, cw_sub,
-        c5_lbl, str(c5_val), c5_col, c5_sub,
-        aw_lbl, str(aw_val), aw_col, aw_sub,
+        h1, h2, h3,
+        r1_title, r1_lbl, str(r1_val), r1_col, r1_sub,
+        r2_title, r2_lbl, str(r2_val), r2_col, r2_sub,
+        r3_title, r3_lbl, str(r3_val), r3_col, r3_sub,
+        r4_title, r4_lbl, str(r4_val), r4_col, r4_sub,
+        r5_lbl, str(r5_val), r5_col, r5_sub,
         local_ctx, local_win,
     ]
-    print("|".join(fields))
+    print("|".join(fields) + "|")
 
 
 if __name__ == "__main__":

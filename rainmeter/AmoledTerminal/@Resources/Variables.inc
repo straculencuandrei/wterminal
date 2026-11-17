@@ -19,9 +19,11 @@ FontText=Ubuntu
 TimeFormat=%H:%M
 DateFormat=%a %Y-%m-%d
 
-; Antigravity token telemetry limits (context window / rolling 24h budget)
+; Antigravity token telemetry limits (context window / rolling 5h, 24h, weekly budgets)
 AgyContextLimit=1000000
+Agy5hLimit=5000000
 AgyDailyLimit=20000000
+AgyWeeklyLimit=30000000
 
 ; Auto-managed display scale & layout state (updated by Layout.lua / reset-widgets.ps1)
 S=1.00
