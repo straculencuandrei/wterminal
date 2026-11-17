@@ -139,3 +139,4 @@ Rainmeter and Flow Launcher default to **`SF Pro Display`** in this theme.
 - **`cmd.exe` `\Common was unexpected` (`(x86)` in `%PATH%`):** `cmd-init.cmd` avoids putting `%PATH%` inside `if (...)` blocks and uses a quote-safe `/c` guard so scripted `cmd /c` calls stay 0ms and error-free.
 - **Starship `System32` timeout warning & `)` prompt glyph:** `starship.toml` sets `scan_timeout = 500` and uses `»` for clean rendering in both Windows Terminal and `conhost.exe`.
 - **Elevated launcher bypassing Windows Terminal:** Start Menu `.lnk` shortcuts route through `wscript.exe wt-open.vbs` (`ShellExecute wt.exe -p <guid>`) so `cmd`, `pwsh`, and `wt` open inside Windows Terminal with no `conhost` flash.
+- **Seelen UI `Wallpaper Manager` crash with Wallpaper Engine:** `apply-theme.ps1` disables `@seelen/wallpaper-manager` in `%APPDATA%\com.seelen.seelen-ui\settings.json` so it doesn't freeze or fight Wallpaper Engine.

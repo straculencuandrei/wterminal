@@ -198,6 +198,15 @@ if (Test-Path $seelenSrc) {
             & $sluExe resource load theme $seelenDst 2>$null
         }
     }
+    $seelenCfgPath = Join-Path $env:APPDATA 'com.seelen.seelen-ui\settings.json'
+    if (Test-Path $seelenCfgPath) {
+        $scfg = Get-Content $seelenCfgPath -Raw | ConvertFrom-Json
+        if ($scfg.byWidget.'@seelen/wallpaper-manager') {
+            $scfg.byWidget.'@seelen/wallpaper-manager'.enabled = $false
+        }
+        $scfg | Add-Member -NotePropertyName 'suspendOnGameMode' -NotePropertyValue $true -Force
+        $scfg | ConvertTo-Json -Depth 12 | Set-Content -Path $seelenCfgPath -Encoding UTF8
+    }
 }
 
 # 3. Apply 4K AMOLED Wallpaper only when requested or when Wallpaper Engine isn't installed
