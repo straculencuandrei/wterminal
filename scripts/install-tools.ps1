@@ -10,7 +10,8 @@ $ErrorActionPreference = 'Stop'
 $packages = @(
     @{ Id = 'RamenSoftware.Windhawk'; Name = 'Windhawk (Taskbar Floating Dock)' },
     @{ Id = 'Rainmeter.Rainmeter'; Name = 'Rainmeter (Minimal Desktop Widgets)' },
-    @{ Id = 'Flow-Launcher.Flow-Launcher'; Name = 'Flow Launcher (Spotlight Replacement)' }
+    @{ Id = 'Flow-Launcher.Flow-Launcher'; Name = 'Flow Launcher (Spotlight Replacement)' },
+    @{ Id = 'ALCPU.CoreTemp'; Name = 'Core Temp (CPU Temperature Sensor for SysPill)' }
 )
 
 if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {

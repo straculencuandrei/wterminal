@@ -206,7 +206,8 @@ if ($ApplyTerminalTheme) {
     Copy-Item (Join-Path $RepoRoot 'terminal\starship-clink.lua') (Join-Path $clinkCfg 'starship.lua') -Force
     Copy-Item (Join-Path $RepoRoot 'terminal\profile.ps1') (Join-Path $ps7Dir 'Microsoft.PowerShell_profile.ps1') -Force
     Copy-Item (Join-Path $RepoRoot 'terminal\profile.ps1') (Join-Path $ps5Dir 'Microsoft.PowerShell_profile.ps1') -Force
-    Write-Host '==> Deployed Starship, Fastfetch, Clink, cmd-init, wt-open, and PowerShell profiles.' -ForegroundColor Cyan
+    Copy-Item (Join-Path $RepoRoot 'scripts\reset-widgets.ps1') (Join-Path $cfgDir 'reset-widgets.ps1') -Force
+    Write-Host '==> Deployed Starship, Fastfetch, Clink, cmd-init, wt-open, reset-widgets, and PowerShell profiles.' -ForegroundColor Cyan
 
     # Safe cmd AutoRun (skips /c scripts cleanly)
     $cmdProcKey = 'HKCU:\Software\Microsoft\Command Processor'
@@ -318,7 +319,21 @@ if ($ApplyTerminalTheme) {
         }
         $sc.Save()
     }
-    Write-Host '==> Routed Start Menu shortcuts (cmd, Command Prompt, Windows PowerShell, pwsh, wt) into Windows Terminal.' -ForegroundColor Cyan
+    $rmExe = "$env:ProgramFiles\Rainmeter\Rainmeter.exe"
+    if (Test-Path $rmExe) {
+        $scRst = $ws.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Reset Widgets.lnk")
+        $scRst.TargetPath = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
+        $scRst.Arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$cfgDir\reset-widgets.ps1`""
+        $scRst.IconLocation = "$rmExe,0"
+        $scRst.Save()
+
+        $scCfg = $ws.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Widget Settings.lnk")
+        $scCfg.TargetPath = $rmExe
+        $scCfg.Arguments = '!ToggleConfig "AmoledTerminal\Settings" "Settings.ini"'
+        $scCfg.IconLocation = "$rmExe,0"
+        $scCfg.Save()
+    }
+    Write-Host '==> Routed Start Menu shortcuts (cmd, Command Prompt, Windows PowerShell, pwsh, wt, Reset Widgets, Widget Settings).' -ForegroundColor Cyan
 }
 
 # 5. Optional Windows 11 declutter tweaks

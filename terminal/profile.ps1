@@ -75,6 +75,27 @@ function ff    { if (Get-Command fastfetch -ErrorAction SilentlyContinue) { fast
 function reload { . $PROFILE }
 function edit-profile { & $env:EDITOR $PROFILE 2>$null; if (-not $?) { Start-Process $PROFILE } }
 function edit-prompt  { Start-Process "$env:USERPROFILE\.config\starship.toml" }
+function reset-widgets {
+    $rm = "$env:ProgramFiles\Rainmeter\Rainmeter.exe"
+    if (Test-Path $rm) {
+        Add-Type -AssemblyName System.Windows.Forms
+        $scr = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+        $rx = $scr.Width - 300
+        & $rm !Move 28 28 "AmoledTerminal\HeroClock"
+        & $rm !Move 28 162 "AmoledTerminal\Weather"
+        & $rm !Move 28 270 "AmoledTerminal\Calendar"
+        & $rm !Move 28 364 "AmoledTerminal\Notes"
+        & $rm !Move $rx 28 "AmoledTerminal\SysPill"
+        & $rm !Move $rx 162 "AmoledTerminal\GpuThermals"
+        & $rm !Move $rx 284 "AmoledTerminal\PowerAudio"
+        & $rm !Move $rx 406 "AmoledTerminal\TerminalDock"
+        & $rm !Move ([int]($scr.Width / 2 - 154)) ($scr.Height - 48) "AmoledTerminal\AudioFFT"
+    }
+}
+function widget-settings {
+    $rm = "$env:ProgramFiles\Rainmeter\Rainmeter.exe"
+    if (Test-Path $rm) { & $rm !ToggleConfig "AmoledTerminal\Settings" "Settings.ini" }
+}
 
 # 4. Smart cd (zoxide)
 if (Get-Command zoxide -ErrorAction SilentlyContinue) {

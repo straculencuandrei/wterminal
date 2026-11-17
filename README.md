@@ -29,13 +29,15 @@ wterminal/
 │   ├── HeroClock/                  # Large minimal clock, seconds, date, and uptime card
 │   ├── Notes/                      # Click-to-edit desktop scratchpad (notes.txt)
 │   ├── PowerAudio/                 # Battery %, AC/BAT badge, C:\ free space, scroll-wheel volume
-│   ├── SysPill/                    # CPU %, RAM %, and net.rx telemetry
-│   ├── TerminalDock/               # Quick-launch pill (> wt | > dir | > web | > cfg)
+│   ├── Settings/                   # Control panel: 1-click Reset Layout, layer toggle & widget switches
+│   ├── SysPill/                    # CPU temp (Core Temp), CPU %, RAM %, and net.rx telemetry
+│   ├── TerminalDock/               # Quick-launch pill (> wt | dir | web | cfg | rst)
 │   └── Weather/                    # Auto-located live weather via wttr.in
 ├── scripts/
-│   ├── install-tools.ps1           # Installs Windhawk, Rainmeter, and Flow Launcher
+│   ├── install-tools.ps1           # Installs Windhawk, Rainmeter, Flow Launcher, and Core Temp
 │   ├── install-terminal-stack.ps1  # Installs pwsh 7, Starship, Fastfetch, eza, bat, fzf, zoxide, JetBrainsMono NF, Clink
-│   └── apply-theme.ps1             # Deploys themes, profiles, Start Menu WT routing, console palette & layout
+│   ├── reset-widgets.ps1           # Snaps all 9 desktop widgets back to default coordinates
+│   └── apply-theme.ps1             # Deploys themes, profiles, Start Menu WT/widget shortcuts, console palette & layout
 ├── terminal/
 │   ├── amoled-terminal-scheme.json # Windows Terminal AMOLED scheme, tab-bar theme & acrylic defaults
 │   ├── cmd-init.cmd                # Quote-safe cmd.exe AutoRun (Clink + Starship + Fastfetch + doskey aliases)
@@ -116,6 +118,7 @@ Rainmeter and Flow Launcher default to **`SF Pro Display`** in this theme.
 | `mkcd`, `touch`, `which`, `grep` | Linux-style helpers |
 | `..`, `...` | Jump up 1 or 2 directories |
 | `edit-prompt`, `edit-profile`, `reload` | Edit `starship.toml` / `$PROFILE` and reload |
+| `reset-widgets`, `widget-settings` | Snap all widgets to default layout or toggle the Settings panel |
 | `Ctrl+R` | Fuzzy command-history search (`fzf` in PowerShell / Clink in `cmd`) |
 | `Ctrl+A / E / W / U / K`, `Tab` | Emacs/Bash line editing & Zsh-style menu completion |
 
