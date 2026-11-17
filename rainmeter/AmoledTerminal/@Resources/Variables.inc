@@ -21,5 +21,6 @@ DateFormat=%a %Y-%m-%d
 
 ; Auto-managed display scale & layout state (updated by Layout.lua / reset-widgets.ps1)
 S=1.00
+FS=1.00
 LastAreaKey=
 PendingLayout=0

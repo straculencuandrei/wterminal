@@ -197,6 +197,18 @@ $flowSrc = Join-Path $RepoRoot 'flow-launcher\AmoledTerminal.xaml'
 Write-Host "==> Deploying Flow Launcher theme to $flowThemesDir" -ForegroundColor Cyan
 New-Item -ItemType Directory -Path $flowThemesDir -Force | Out-Null
 Copy-Item -Path $flowSrc -Destination (Join-Path $flowThemesDir 'AmoledTerminal.xaml') -Force
+$flowCfgPath = Join-Path $env:APPDATA 'FlowLauncher\Settings\Settings.json'
+if (Test-Path $flowCfgPath) {
+    $fcfg = [System.IO.File]::ReadAllText($flowCfgPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+    $fcfg | Add-Member -NotePropertyName 'Theme' -NotePropertyValue 'AmoledTerminal' -Force
+    $fcfg | Add-Member -NotePropertyName 'EnableDialogJump' -NotePropertyValue $false -Force
+    $fcfg | Add-Member -NotePropertyName 'DialogJumpHotkey' -NotePropertyValue '' -Force
+    [System.IO.File]::WriteAllText(
+        $flowCfgPath,
+        ($fcfg | ConvertTo-Json -Depth 16),
+        [System.Text.UTF8Encoding]::new($false)
+    )
+}
 
 $seelenSrc = Join-Path $RepoRoot 'seelen-ui\amoled-terminal'
 $seelenDst = Join-Path $env:APPDATA 'com.seelen.seelen-ui\themes\amoled-terminal'
@@ -213,15 +225,22 @@ if (Test-Path $seelenSrc) {
     }
     $seelenCfgPath = Join-Path $env:APPDATA 'com.seelen.seelen-ui\settings.json'
     if (Test-Path $seelenCfgPath) {
-        $scfg = [System.IO.File]::ReadAllText($seelenCfgPath) | ConvertFrom-Json
+        $scfg = [System.IO.File]::ReadAllText($seelenCfgPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         if ($scfg.byWidget.'@seelen/wallpaper-manager') {
             $scfg.byWidget.'@seelen/wallpaper-manager'.enabled = $false
+        }
+        if ($scfg.byWidget.'@seelen/weg') {
+            $scfg.byWidget.'@seelen/weg'.enabled = $true
+            $scfg.byWidget.'@seelen/weg'.hideMode = 'OnOverlap'
+            $scfg.byWidget.'@seelen/weg'.revealOnAttention = 'Never'
+            $scfg.byWidget.'@seelen/weg'.delayToHide = 200
+            $scfg.byWidget.'@seelen/weg'.delayToShow = 80
         }
         $scfg | Add-Member -NotePropertyName 'suspendOnGameMode' -NotePropertyValue $true -Force
         # Write UTF-8 without BOM; Seelen UI's Rust serde_json parser rejects a leading BOM
         [System.IO.File]::WriteAllText(
             $seelenCfgPath,
-            ($scfg | ConvertTo-Json -Depth 12),
+            ($scfg | ConvertTo-Json -Depth 20),
             [System.Text.UTF8Encoding]::new($false)
         )
     }
@@ -258,20 +277,19 @@ if ($ApplyTerminalTheme) {
     Copy-Item (Join-Path $RepoRoot 'terminal\profile.ps1') (Join-Path $ps7Dir 'Microsoft.PowerShell_profile.ps1') -Force
     Copy-Item (Join-Path $RepoRoot 'terminal\profile.ps1') (Join-Path $ps5Dir 'Microsoft.PowerShell_profile.ps1') -Force
     Copy-Item (Join-Path $RepoRoot 'scripts\reset-widgets.ps1') (Join-Path $cfgDir 'reset-widgets.ps1') -Force
-    Copy-Item (Join-Path $RepoRoot 'scripts\startup-widgets.ps1') (Join-Path $cfgDir 'startup-widgets.ps1') -Force
-    Copy-Item (Join-Path $RepoRoot 'scripts\startup-widgets.vbs') (Join-Path $cfgDir 'startup-widgets.vbs') -Force
-    Write-Host '==> Deployed Starship, Fastfetch, Clink, cmd-init, wt-open, reset-widgets, startup-widgets, and PowerShell profiles.' -ForegroundColor Cyan
+    Copy-Item (Join-Path $RepoRoot 'scripts\boot-orchestrator.ps1') (Join-Path $cfgDir 'boot-orchestrator.ps1') -Force
+    Write-Host '==> Deployed Starship, Fastfetch, Clink, cmd-init, wt-open, reset-widgets, boot-orchestrator, and PowerShell profiles.' -ForegroundColor Cyan
 
-    # Register silent interactive logon task for Rainmeter (waits for Wallpaper Engine & Seelen UI)
-    $vbsStartup = Join-Path $cfgDir 'startup-widgets.vbs'
-    if (Test-Path "$env:ProgramFiles\Rainmeter\Rainmeter.exe") {
-        $stAction = New-ScheduledTaskAction -Execute "$env:WINDIR\System32\wscript.exe" -Argument "`"$vbsStartup`""
-        $stTrigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
-        $stTrigger.Delay = 'PT3S'
-        $stPrincipal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
-        $stSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 2)
-        Register-ScheduledTask -TaskName 'WterminalRainmeterStartup' -Action $stAction -Trigger $stTrigger -Principal $stPrincipal -Settings $stSettings -Force | Out-Null
-    }
+    # Self-healing boot orchestrator (Seelen UI service + dock, native taskbar auto-hide, Rainmeter after Wallpaper Engine).
+    # Runs hidden via conhost --headless (no wscript/VBScript: VBScript is deprecated on Windows 11 26H2).
+    $bootScript = Join-Path $cfgDir 'boot-orchestrator.ps1'
+    Unregister-ScheduledTask -TaskName 'WterminalRainmeterStartup' -Confirm:$false -ErrorAction SilentlyContinue
+    Remove-Item (Join-Path $cfgDir 'startup-widgets.vbs'), (Join-Path $cfgDir 'startup-widgets.ps1') -Force -ErrorAction SilentlyContinue
+    $bootAction = New-ScheduledTaskAction -Execute "$env:WINDIR\System32\conhost.exe" -Argument "--headless powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$bootScript`""
+    $bootTrigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+    $bootPrincipal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
+    $bootSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 10)
+    Register-ScheduledTask -TaskName 'WterminalBoot' -Action $bootAction -Trigger $bootTrigger -Principal $bootPrincipal -Settings $bootSettings -Force | Out-Null
 
     # Safe cmd AutoRun (skips /c scripts cleanly)
     $cmdProcKey = 'HKCU:\Software\Microsoft\Command Processor'

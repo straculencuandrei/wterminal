@@ -6,6 +6,10 @@ local function round(n)
     return math.floor(n + 0.5)
 end
 
+local function round2(n)
+    return math.floor(n * 100 + 0.5) / 100
+end
+
 local function clamp(val, lo, hi)
     if val < lo then return lo end
     if val > hi then return hi end
@@ -106,7 +110,20 @@ local function readActiveConfigs()
     return active
 end
 
-local function updateVariablesFile(newS, areaKey, pending)
+local function computeFontScale(newS)
+    SKIN:Bang("!UpdateMeter", "MeterDpiProbe")
+    local probe = SKIN:GetMeter("MeterDpiProbe")
+    local probeH = probe and probe:GetH() or 0
+    local dpiRatio = 1.0
+    if probeH > 60 then
+        -- Ubuntu 72pt at 96 DPI renders with ~107px cell height (~134px at 120 DPI)
+        dpiRatio = probeH / 107.0
+        if dpiRatio < 0.85 then dpiRatio = 1.0 end
+    end
+    return clamp(round2(newS / dpiRatio), 0.60, 1.50), probeH
+end
+
+local function updateVariablesFile(newS, newFS, areaKey, pending)
     local varPath = SKIN:ReplaceVariables("#@#Variables.inc")
     local f = io.open(varPath, "r")
     if not f then return false end
@@ -117,6 +134,7 @@ local function updateVariablesFile(newS, areaKey, pending)
     content = content:gsub("^\239\187\191", "")
 
     local sStr = string.format("%.2f", newS)
+    local fsStr = string.format("%.2f", newFS)
     local function setVar(text, key, val)
         local pattern = "(%f[^\n]" .. key .. "=)[^\r\n]*"
         if text:match(pattern) then
@@ -127,6 +145,13 @@ local function updateVariablesFile(newS, areaKey, pending)
     end
 
     content = setVar(content, "S", sStr)
+    if content:match("(%f[^\n]FS=)[^\r\n]*") then
+        content = setVar(content, "FS", fsStr)
+    elseif content:match("(%f[^\n]S=[^\r\n]*)") then
+        content = (content:gsub("(%f[^\n]S=[^\r\n]*)", "%1\nFS=" .. fsStr, 1))
+    else
+        content = setVar(content, "FS", fsStr)
+    end
     content = setVar(content, "LastAreaKey", areaKey)
     content = setVar(content, "PendingLayout", pending)
 
@@ -231,25 +256,28 @@ function Update()
 
     local areaKey = string.format("%d,%d,%d,%d,%d,%d", wx, wy, ww, wh, sw, sh)
     local curS = tonumber(SKIN:GetVariable("S", "1")) or 1
+    local curFS = tonumber(SKIN:GetVariable("FS", "1.00")) or 1.00
     local lastArea = SKIN:GetVariable("LastAreaKey", "")
     local pending = SKIN:GetVariable("PendingLayout", "0")
     local newS = computeScale(ww, wh, sy, sh, wy)
+    local newFS = computeFontScale(newS)
 
     if pending == "1" then
         applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, curS, false)
-        updateVariablesFile(curS, areaKey, "0")
+        updateVariablesFile(curS, curFS, areaKey, "0")
         SKIN:Bang("!SetVariable", "PendingLayout", "0")
         SKIN:Bang("!SetVariable", "LastAreaKey", areaKey)
         return 1
     end
 
-    if areaKey ~= lastArea or math.abs(newS - curS) >= 0.02 then
-        if math.abs(newS - curS) >= 0.02 then
-            updateVariablesFile(newS, areaKey, "1")
+    local scaleChanged = (math.abs(newS - curS) >= 0.02) or (math.abs(newFS - curFS) >= 0.02)
+    if areaKey ~= lastArea or scaleChanged then
+        if scaleChanged then
+            updateVariablesFile(newS, newFS, areaKey, "1")
             SKIN:Bang("!RefreshGroup", "AmoledTerminal")
         else
             applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, newS, false)
-            updateVariablesFile(newS, areaKey, "0")
+            updateVariablesFile(newS, newFS, areaKey, "0")
             SKIN:Bang("!SetVariable", "LastAreaKey", areaKey)
         end
     end
@@ -261,15 +289,17 @@ function ResetLayout()
     if ww <= 0 or wh <= 0 then return end
     local areaKey = string.format("%d,%d,%d,%d,%d,%d", wx, wy, ww, wh, sw, sh)
     local curS = tonumber(SKIN:GetVariable("S", "1")) or 1
+    local curFS = tonumber(SKIN:GetVariable("FS", "1.00")) or 1.00
     local newS = computeScale(ww, wh, sy, sh, wy)
+    local newFS = computeFontScale(newS)
 
-    if math.abs(newS - curS) >= 0.02 then
+    if math.abs(newS - curS) >= 0.02 or math.abs(newFS - curFS) >= 0.02 then
         -- Activate default skins first, then write new scale and refresh so sizes + positions update together
         applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, newS, true)
-        updateVariablesFile(newS, areaKey, "1")
+        updateVariablesFile(newS, newFS, areaKey, "1")
         SKIN:Bang("!RefreshGroup", "AmoledTerminal")
     else
         applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, curS, true)
-        updateVariablesFile(curS, areaKey, "0")
+        updateVariablesFile(curS, curFS, areaKey, "0")
     end
 end

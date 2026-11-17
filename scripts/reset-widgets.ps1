@@ -11,9 +11,55 @@ param(
 Add-Type @"
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
+
 public class WtermDpiHelper {
+    [StructLayout(LayoutKind.Sequential)] public struct POINT { public int X, Y; }
+    public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
     [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
     [DllImport("shcore.dll")] public static extern int GetProcessDpiAwareness(IntPtr hprocess, out int awareness);
+    [DllImport("user32.dll")] public static extern uint GetDpiForSystem();
+    [DllImport("user32.dll")] public static extern uint GetDpiForWindow(IntPtr hwnd);
+    [DllImport("user32.dll")] public static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+    [DllImport("shcore.dll")] public static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+    [DllImport("user32.dll")] public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+    [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+    public static uint GetPrimaryMonitorDpi() {
+        try {
+            POINT pt = new POINT { X = 0, Y = 0 };
+            IntPtr hmon = MonitorFromPoint(pt, 1);
+            uint dx = 96, dy = 96;
+            if (hmon != IntPtr.Zero && GetDpiForMonitor(hmon, 0, out dx, out dy) == 0 && dx > 0) {
+                return dx;
+            }
+        } catch {}
+        try {
+            uint sysDpi = GetDpiForSystem();
+            return sysDpi > 0 ? sysDpi : 96;
+        } catch {
+            return 96;
+        }
+    }
+
+    public static uint GetRainmeterWindowDpi(int rmPid) {
+        uint found = 0;
+        EnumWindows((hWnd, lParam) => {
+            uint pid;
+            GetWindowThreadProcessId(hWnd, out pid);
+            if ((int)pid != rmPid) return true;
+            StringBuilder sb = new StringBuilder(64);
+            GetClassName(hWnd, sb, sb.Capacity);
+            if (sb.ToString() == "RainmeterMeterWindow") {
+                uint d = GetDpiForWindow(hWnd);
+                if (d > 0) { found = d; return false; }
+            }
+            return true;
+        }, IntPtr.Zero);
+        return found;
+    }
 }
 "@
 [void][WtermDpiHelper]::SetProcessDPIAware()
@@ -67,6 +113,27 @@ $s = [Math]::Round($s, 2)
 $sStr = $s.ToString('0.00', [System.Globalization.CultureInfo]::InvariantCulture)
 $areaKey = "$wx,$wy,$ww,$wh,$sw,$sh"
 
+$monitorDpi = [int][WtermDpiHelper]::GetPrimaryMonitorDpi()
+if ($monitorDpi -le 0) { $monitorDpi = 96 }
+
+$rmProc = Get-Process -Name 'Rainmeter' -ErrorAction SilentlyContinue | Select-Object -First 1
+$effectiveDpi = $monitorDpi
+if ($rmProc) {
+    $aw = -1
+    [void][WtermDpiHelper]::GetProcessDpiAwareness($rmProc.Handle, [ref]$aw)
+    $rmWinDpi = [int][WtermDpiHelper]::GetRainmeterWindowDpi($rmProc.Id)
+    if ($aw -eq 0 -or ($rmWinDpi -gt 0 -and $rmWinDpi -ne $monitorDpi)) {
+        Stop-Process -Name 'Rainmeter' -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
+        $rmProc = $null
+    } elseif ($rmWinDpi -gt 0) {
+        $effectiveDpi = $rmWinDpi
+    }
+}
+
+$fsVal = [Math]::Round([Math]::Max(0.60, [Math]::Min(1.50, $s * (96.0 / $effectiveDpi))), 2)
+$fsStr = $fsVal.ToString('0.00', [System.Globalization.CultureInfo]::InvariantCulture)
+
 $varPath = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Rainmeter\Skins\AmoledTerminal\@Resources\Variables.inc'
 if (Test-Path $varPath) {
     $vtxt = [System.IO.File]::ReadAllText($varPath)
@@ -80,21 +147,12 @@ if (Test-Path $varPath) {
         return $text + "$k=$val`r`n"
     }
     $vtxt = & $setVar $vtxt 'S' $sStr
+    $vtxt = & $setVar $vtxt 'FS' $fsStr
     $vtxt = & $setVar $vtxt 'LastAreaKey' $areaKey
     $vtxt = & $setVar $vtxt 'PendingLayout' '0'
     [System.IO.File]::WriteAllText($varPath, $vtxt, [System.Text.UTF8Encoding]::new($false))
 }
 
-$rmProc = Get-Process -Name 'Rainmeter' -ErrorAction SilentlyContinue | Select-Object -First 1
-if ($rmProc) {
-    $aw = -1
-    [void][WtermDpiHelper]::GetProcessDpiAwareness($rmProc.Handle, [ref]$aw)
-    if ($aw -eq 0) {
-        Stop-Process -Name 'Rainmeter' -Force -ErrorAction SilentlyContinue
-        Start-Sleep -Seconds 1
-        $rmProc = $null
-    }
-}
 if (-not $rmProc) {
     Start-Process -FilePath $rainmeterExe
     Start-Sleep -Seconds 2
@@ -150,4 +208,4 @@ if ($OpenSettings) {
     & $rainmeterExe !Move ($wx + [int][Math]::Floor(($ww - $setW) / 2)) ($wy + [int][Math]::Floor(($wh - $setH) / 2)) 'AmoledTerminal\Settings'
 }
 
-Write-Host "Reset all AmoledTerminal widgets (scale=${sStr}, area=${ww}x${wh})." -ForegroundColor Green
+Write-Host "Reset all AmoledTerminal widgets (scale=${sStr}, fs=${fsStr}, dpi=${effectiveDpi}, area=${ww}x${wh})." -ForegroundColor Green
