@@ -31,6 +31,7 @@ doskey ...=cd ..\..
 
 if defined _AMOLED_CMD_BANNER goto :eof
 set "_AMOLED_CMD_BANNER=1"
+cls
 where fastfetch >nul 2>&1 && fastfetch
 goto :eof
 

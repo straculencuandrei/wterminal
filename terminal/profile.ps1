@@ -76,27 +76,16 @@ function reload { . $PROFILE }
 function edit-profile { & $env:EDITOR $PROFILE 2>$null; if (-not $?) { Start-Process $PROFILE } }
 function edit-prompt  { Start-Process "$env:USERPROFILE\.config\starship.toml" }
 function reset-widgets {
-    $rm = "$env:ProgramFiles\Rainmeter\Rainmeter.exe"
-    if (Test-Path $rm) {
-        Add-Type -AssemblyName System.Windows.Forms
-        $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
-        $work = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
-        $topY = [Math]::Max($work.Top + 18, 50)
-        $rx = $bounds.Width - 300
-        & $rm !Move 28 $topY "AmoledTerminal\HeroClock"
-        & $rm !Move 28 ($topY + 134) "AmoledTerminal\Weather"
-        & $rm !Move 28 ($topY + 242) "AmoledTerminal\Calendar"
-        & $rm !Move 28 ($topY + 336) "AmoledTerminal\Notes"
-        & $rm !Move $rx $topY "AmoledTerminal\SysPill"
-        & $rm !Move $rx ($topY + 134) "AmoledTerminal\GpuThermals"
-        & $rm !Move $rx ($topY + 256) "AmoledTerminal\PowerAudio"
-        & $rm !Move $rx ($topY + 378) "AmoledTerminal\TerminalDock"
-        & $rm !Move ([int]($bounds.Width / 2 - 154)) ($bounds.Height - 124) "AmoledTerminal\AudioFFT"
+    $rst = "$env:USERPROFILE\.config\reset-widgets.ps1"
+    if (Test-Path $rst) {
+        & $rst
     }
 }
 function widget-settings {
-    $rm = "$env:ProgramFiles\Rainmeter\Rainmeter.exe"
-    if (Test-Path $rm) { & $rm !ToggleConfig "AmoledTerminal\Settings" "Settings.ini" }
+    $rst = "$env:USERPROFILE\.config\reset-widgets.ps1"
+    if (Test-Path $rst) {
+        & $rst -OpenSettings
+    }
 }
 
 # 4. Smart cd (zoxide)
@@ -110,11 +99,15 @@ if (Get-Command starship -ErrorAction SilentlyContinue) {
     Invoke-Expression (& starship init powershell)
 }
 
-# 6. Show fastfetch only in interactive terminal sessions (skip -Command / -File scripts)
+# 6. Clear copyright banners and show fastfetch in interactive terminal sessions only
 $cliArgs = [Environment]::GetCommandLineArgs()
 $isScripted = [bool]($cliArgs | Where-Object { $_ -match '^-(c|command|f|file|ec|encodedcommand)$' })
 if ([Environment]::UserInteractive -and (-not $isScripted) -and ($Host.Name -eq 'ConsoleHost')) {
-    if (Get-Command fastfetch -ErrorAction SilentlyContinue) {
-        fastfetch
+    if (-not $env:_AMOLED_PS_BANNER) {
+        $env:_AMOLED_PS_BANNER = '1'
+        Clear-Host
+        if (Get-Command fastfetch -ErrorAction SilentlyContinue) {
+            fastfetch
+        }
     }
 }
