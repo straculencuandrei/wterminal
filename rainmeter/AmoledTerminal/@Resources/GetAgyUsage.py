@@ -221,7 +221,7 @@ def main() -> None:
         )
 
     local_ctx = f"ctx: {fmt_tok(active_spent)} / {fmt_tok(ctx_limit)} ({rem_pct}% left)"
-    local_win = f"5h: {fmt_tok(tok_5h)}  \u00b7  24h: {fmt_tok(tok_24h)}  \u00b7  7d: {fmt_tok(tok_7d)}"
+    local_win = f"5h: {fmt_tok(tok_5h)}  /  24h: {fmt_tok(tok_24h)}  /  7d: {fmt_tok(tok_7d)}"
 
     # 29 pipe-delimited fields with trailing pipe
     fields = [
