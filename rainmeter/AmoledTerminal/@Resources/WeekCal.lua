@@ -5,6 +5,7 @@ function Update()
     local wday = (t.wday == 1) and 7 or (t.wday - 1)
     local monday = now - (wday - 1) * 86400
 
+    local s = tonumber(SKIN:GetVariable("S", "1")) or 1
     for i = 1, 7 do
         local dt = os.date("*t", monday + (i - 1) * 86400)
         local dayStr = string.format("%02d", dt.day)
@@ -13,7 +14,7 @@ function Update()
             SKIN:Bang("!SetOption", "MeterDay" .. i, "FontColor", "5,5,7,255")
             SKIN:Bang("!SetOption", "MeterDay" .. i, "FontWeight", "700")
             SKIN:Bang("!SetOption", "MeterDayLbl" .. i, "FontColor", "#TermGreen#")
-            local pillX = 15 + (i - 1) * 35
+            local pillX = math.floor(0.5 + (15 + (i - 1) * 35) * s)
             SKIN:Bang("!SetOption", "MeterTodayPill", "X", tostring(pillX))
         else
             SKIN:Bang("!SetOption", "MeterDay" .. i, "FontColor", "#TextSecondary#")

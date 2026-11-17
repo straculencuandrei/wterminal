@@ -18,3 +18,8 @@ FontText=SF Pro Display
 ; Time Format: %H:%M for 24h, %I:%M %p for 12h
 TimeFormat=%H:%M
 DateFormat=%a %Y-%m-%d
+
+; Auto-managed display scale & layout state (updated by Layout.lua / reset-widgets.ps1)
+S=1.00
+LastAreaKey=
+PendingLayout=0

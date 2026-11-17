@@ -74,15 +74,19 @@ if ($RestoreDefaults) {
     return
 }
 
-# 1. Deploy Rainmeter skins as UTF-16 LE (prevents Â°C / Â· encoding glitches)
+# 1. Deploy Rainmeter skins (.ini as UTF-16 LE for symbol fidelity; .inc/.lua as UTF-8 without BOM for Lua/Rainmeter)
 $rainmeterDest = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Rainmeter\Skins\AmoledTerminal'
 $rainmeterSrc = Join-Path $RepoRoot 'rainmeter\AmoledTerminal'
-Write-Host "==> Deploying Rainmeter skins (UTF-16 LE) to $rainmeterDest" -ForegroundColor Cyan
+Write-Host "==> Deploying Rainmeter skins to $rainmeterDest" -ForegroundColor Cyan
 New-Item -ItemType Directory -Path $rainmeterDest -Force | Out-Null
 Copy-Item -Path "$rainmeterSrc\*" -Destination $rainmeterDest -Recurse -Force
-Get-ChildItem $rainmeterDest -Recurse -Include '*.ini','*.inc' | ForEach-Object {
+Get-ChildItem $rainmeterDest -Recurse -Include '*.ini' | ForEach-Object {
     $txt = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
     [System.IO.File]::WriteAllText($_.FullName, $txt, [System.Text.Encoding]::Unicode)
+}
+Get-ChildItem $rainmeterDest -Recurse -Include '*.inc','*.lua' | ForEach-Object {
+    $txt = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
+    [System.IO.File]::WriteAllText($_.FullName, $txt, [System.Text.UTF8Encoding]::new($false))
 }
 
 if ($SetupRainmeterLayout) {
@@ -95,8 +99,8 @@ SkinPath=$env:USERPROFILE\Documents\Rainmeter\Skins\
 
 [AmoledTerminal\HeroClock]
 Active=1
-WindowX=28
-WindowY=50
+WindowX=(#WORKAREAX#+24)
+WindowY=(#WORKAREAY#+16)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -104,8 +108,8 @@ KeepOnScreen=1
 
 [AmoledTerminal\Weather]
 Active=1
-WindowX=28
-WindowY=184
+WindowX=(#WORKAREAX#+24)
+WindowY=(#WORKAREAY#+150)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -113,8 +117,8 @@ KeepOnScreen=1
 
 [AmoledTerminal\Calendar]
 Active=1
-WindowX=28
-WindowY=292
+WindowX=(#WORKAREAX#+24)
+WindowY=(#WORKAREAY#+258)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -122,8 +126,8 @@ KeepOnScreen=1
 
 [AmoledTerminal\Notes]
 Active=1
-WindowX=28
-WindowY=386
+WindowX=(#WORKAREAX#+24)
+WindowY=(#WORKAREAY#+352)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -131,8 +135,8 @@ KeepOnScreen=1
 
 [AmoledTerminal\SysPill]
 Active=1
-WindowX=(#SCREENAREAWIDTH#-300)
-WindowY=50
+WindowX=(#WORKAREAX#+#WORKAREAWIDTH#-296)
+WindowY=(#WORKAREAY#+16)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -140,8 +144,8 @@ KeepOnScreen=1
 
 [AmoledTerminal\GpuThermals]
 Active=1
-WindowX=(#SCREENAREAWIDTH#-300)
-WindowY=184
+WindowX=(#WORKAREAX#+#WORKAREAWIDTH#-296)
+WindowY=(#WORKAREAY#+150)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -149,8 +153,8 @@ KeepOnScreen=1
 
 [AmoledTerminal\PowerAudio]
 Active=1
-WindowX=(#SCREENAREAWIDTH#-300)
-WindowY=306
+WindowX=(#WORKAREAX#+#WORKAREAWIDTH#-296)
+WindowY=(#WORKAREAY#+272)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -158,8 +162,8 @@ KeepOnScreen=1
 
 [AmoledTerminal\TerminalDock]
 Active=1
-WindowX=(#SCREENAREAWIDTH#-300)
-WindowY=428
+WindowX=(#WORKAREAX#+#WORKAREAWIDTH#-296)
+WindowY=(#WORKAREAY#+394)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -167,15 +171,15 @@ KeepOnScreen=1
 
 [AmoledTerminal\AudioFFT]
 Active=1
-WindowX=(#SCREENAREAWIDTH#/2-154)
-WindowY=(#SCREENAREAHEIGHT#-124)
+WindowX=(#WORKAREAX#+#WORKAREAWIDTH#/2-154)
+WindowY=(#WORKAREAY#+#WORKAREAHEIGHT#-120)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
 KeepOnScreen=1
 "@
     $rainmeterIni | Set-Content -Path (Join-Path $rmDir 'Rainmeter.ini') -Encoding Unicode
-    Write-Host '==> Wrote Rainmeter.ini widget layout.' -ForegroundColor Cyan
+    Write-Host '==> Wrote WorkArea-adaptive Rainmeter.ini widget layout.' -ForegroundColor Cyan
 }
 
 # 2. Deploy Flow Launcher & Seelen UI themes
