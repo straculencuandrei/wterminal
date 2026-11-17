@@ -55,7 +55,7 @@ $bottomReserved = [Math]::Max(0, $screenBottom - $workBottom)
 $hasExternalBottomDock = ($bottomReserved -lt 36)
 $dockPerUnit = if ($hasExternalBottomDock) { 96 } else { 18 }
 
-$maxVerticalRatio = ($wh - 16) / (16 + 554 + 14 + 34 + $dockPerUnit)
+$maxVerticalRatio = ($wh - 16) / (16 + 476 + 14 + 34 + $dockPerUnit)
 if ($maxVerticalRatio -lt $s) {
     $s = [Math]::Min(1.50, [Math]::Max(0.68, $maxVerticalRatio))
 }
@@ -113,7 +113,6 @@ $hCalendar = [int][Math]::Round(82 * $s)
 $hSys = [int][Math]::Round(122 * $s)
 $hGpu = [int][Math]::Round(110 * $s)
 $hPwr = [int][Math]::Round(110 * $s)
-$hAgy = [int][Math]::Round(122 * $s)
 
 $fftW = 2 * [int][Math]::Round(12 * $s) + 24 * [Math]::Max(2, [int][Math]::Round(8 * $s)) + 23 * [Math]::Max(1, [int][Math]::Round(4 * $s))
 $fftH = [int][Math]::Round(34 * $s)
@@ -129,8 +128,7 @@ $layout = @(
     @{ Cfg = 'AmoledTerminal\SysPill';      Ini = 'SysPill.ini';      X = $rightX; Y = $topY },
     @{ Cfg = 'AmoledTerminal\GpuThermals';  Ini = 'GpuThermals.ini';  X = $rightX; Y = ($topY + $hSys + $gapY) },
     @{ Cfg = 'AmoledTerminal\PowerAudio';   Ini = 'PowerAudio.ini';   X = $rightX; Y = ($topY + $hSys + $gapY + $hGpu + $gapY) },
-    @{ Cfg = 'AmoledTerminal\AgyTokens';    Ini = 'AgyTokens.ini';    X = $rightX; Y = ($topY + $hSys + $gapY + $hGpu + $gapY + $hPwr + $gapY) },
-    @{ Cfg = 'AmoledTerminal\TerminalDock'; Ini = 'TerminalDock.ini'; X = $rightX; Y = ($topY + $hSys + $gapY + $hGpu + $gapY + $hPwr + $gapY + $hAgy + $gapY) },
+    @{ Cfg = 'AmoledTerminal\TerminalDock'; Ini = 'TerminalDock.ini'; X = $rightX; Y = ($topY + $hSys + $gapY + $hGpu + $gapY + $hPwr + $gapY) },
     @{ Cfg = 'AmoledTerminal\AudioFFT';     Ini = 'AudioFFT.ini';     X = $fftX;   Y = $fftY }
 )
 

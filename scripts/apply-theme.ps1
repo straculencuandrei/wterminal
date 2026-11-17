@@ -84,7 +84,7 @@ Get-ChildItem $rainmeterDest -Recurse -Include '*.ini' | ForEach-Object {
     $txt = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
     [System.IO.File]::WriteAllText($_.FullName, $txt, [System.Text.Encoding]::Unicode)
 }
-Get-ChildItem $rainmeterDest -Recurse -Include '*.inc','*.lua','*.py','*.json' | ForEach-Object {
+Get-ChildItem $rainmeterDest -Recurse -Include '*.inc','*.lua' | ForEach-Object {
     $txt = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
     [System.IO.File]::WriteAllText($_.FullName, $txt, [System.Text.UTF8Encoding]::new($false))
 }
@@ -160,19 +160,10 @@ Draggable=1
 SnapEdges=1
 KeepOnScreen=1
 
-[AmoledTerminal\AgyTokens]
-Active=1
-WindowX=(#WORKAREAX#+#WORKAREAWIDTH#-296)
-WindowY=(#WORKAREAY#+394)
-AlwaysOnTop=0
-Draggable=1
-SnapEdges=1
-KeepOnScreen=1
-
 [AmoledTerminal\TerminalDock]
 Active=1
 WindowX=(#WORKAREAX#+#WORKAREAWIDTH#-296)
-WindowY=(#WORKAREAY#+528)
+WindowY=(#WORKAREAY#+394)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1

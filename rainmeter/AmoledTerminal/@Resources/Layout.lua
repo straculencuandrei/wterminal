@@ -71,7 +71,7 @@ local function computeScale(ww, wh, sy, sh, wy)
     local bottomReserved = math.max(0, screenBottom - workBottom)
     local hasExternalBottomDock = (bottomReserved < 36)
     local dockPerUnit = hasExternalBottomDock and 96 or 18
-    local maxVerticalRatio = (wh - 16) / (16 + 554 + 14 + 34 + dockPerUnit)
+    local maxVerticalRatio = (wh - 16) / (16 + 476 + 14 + 34 + dockPerUnit)
     if maxVerticalRatio < s then
         s = clamp(maxVerticalRatio, 0.68, 1.50)
     end
@@ -152,7 +152,6 @@ local function applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, s, activateAll)
     local hSys = round(122 * s)
     local hGpu = round(110 * s)
     local hPwr = round(110 * s)
-    local hAgy = round(122 * s)
 
     local fftW = 2 * round(12 * s) + 24 * math.max(2, round(8 * s)) + 23 * math.max(1, round(4 * s))
     local fftH = round(34 * s)
@@ -191,54 +190,17 @@ local function applyPositions(wx, wy, ww, wh, sx, sy, sw, sh, s, activateAll)
     place("AmoledTerminal\\SysPill", "SysPill.ini", rightX, topY, false)
     place("AmoledTerminal\\GpuThermals", "GpuThermals.ini", rightX, topY + hSys + gapY, false)
     place("AmoledTerminal\\PowerAudio", "PowerAudio.ini", rightX, topY + hSys + gapY + hGpu + gapY, false)
-    place("AmoledTerminal\\AgyTokens", "AgyTokens.ini", rightX, topY + hSys + gapY + hGpu + gapY + hPwr + gapY, false)
-    place("AmoledTerminal\\TerminalDock", "TerminalDock.ini", rightX, topY + hSys + gapY + hGpu + gapY + hPwr + gapY + hAgy + gapY, false)
+    place("AmoledTerminal\\TerminalDock", "TerminalDock.ini", rightX, topY + hSys + gapY + hGpu + gapY + hPwr + gapY, false)
 
     place("AmoledTerminal\\AudioFFT", "AudioFFT.ini", fftX, fftY, false)
 
     if active["AmoledTerminal\\Settings"] then
         local setW = round(280 * s)
-        local setH = round(352 * s)
+        local setH = round(328 * s)
         local setX = wx + math.floor((ww - setW) / 2)
         local setY = wy + math.floor((wh - setH) / 2)
         SKIN:Bang("!Move", tostring(setX), tostring(setY), "AmoledTerminal\\Settings")
     end
-
-    if active["AmoledTerminal\\AgyTokensExpand"] then
-        local expW = round(304 * s)
-        local expH = round(356 * s)
-        local agyY = topY + hSys + gapY + hGpu + gapY + hPwr + gapY
-        local expX = math.max(wx + marginX, rightX - expW - gapY)
-        local expY = clamp(agyY - math.floor((expH - hAgy) / 2), topY, workBottom - dockClear - expH)
-        SKIN:Bang("!Move", tostring(expX), tostring(expY), "AmoledTerminal\\AgyTokensExpand")
-        SKIN:Bang("!ZPos", "0", "AmoledTerminal\\AgyTokensExpand")
-    end
-end
-
-function PositionExpand()
-    local wx, wy, ww, wh, sx, sy, sw, sh = getMonitorMetrics()
-    if ww <= 0 or wh <= 0 then return end
-    local s = tonumber(SKIN:GetVariable("S", "1")) or 1
-    local marginX = math.max(12, round(24 * s))
-    local topY = wy + math.max(12, round(16 * s))
-    local gapY = math.max(8, round(12 * s))
-    local cardW = round(272 * s)
-    local rightX = wx + ww - cardW - marginX
-    local hSys = round(122 * s)
-    local hGpu = round(110 * s)
-    local hPwr = round(110 * s)
-    local hAgy = round(122 * s)
-    local expW = round(304 * s)
-    local expH = round(356 * s)
-    local workBottom = wy + wh
-    local screenBottom = sy + sh
-    local bottomReserved = math.max(0, screenBottom - workBottom)
-    local dockClear = (bottomReserved < 36) and math.max(82, round(96 * s)) or math.max(14, round(18 * s))
-    local agyY = topY + hSys + gapY + hGpu + gapY + hPwr + gapY
-    local expX = math.max(wx + marginX, rightX - expW - gapY)
-    local expY = clamp(agyY - math.floor((expH - hAgy) / 2), topY, workBottom - dockClear - expH)
-    SKIN:Bang("!Move", tostring(expX), tostring(expY), "AmoledTerminal\\AgyTokensExpand")
-    SKIN:Bang("!ZPos", "0", "AmoledTerminal\\AgyTokensExpand")
 end
 
 local tickCount = 0
