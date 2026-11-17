@@ -96,7 +96,7 @@ SkinPath=$env:USERPROFILE\Documents\Rainmeter\Skins\
 [AmoledTerminal\HeroClock]
 Active=1
 WindowX=28
-WindowY=28
+WindowY=50
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -105,7 +105,7 @@ KeepOnScreen=1
 [AmoledTerminal\Weather]
 Active=1
 WindowX=28
-WindowY=162
+WindowY=184
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -114,7 +114,7 @@ KeepOnScreen=1
 [AmoledTerminal\Calendar]
 Active=1
 WindowX=28
-WindowY=270
+WindowY=292
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -123,7 +123,7 @@ KeepOnScreen=1
 [AmoledTerminal\Notes]
 Active=1
 WindowX=28
-WindowY=364
+WindowY=386
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -132,7 +132,7 @@ KeepOnScreen=1
 [AmoledTerminal\SysPill]
 Active=1
 WindowX=(#SCREENAREAWIDTH#-300)
-WindowY=28
+WindowY=50
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -141,7 +141,7 @@ KeepOnScreen=1
 [AmoledTerminal\GpuThermals]
 Active=1
 WindowX=(#SCREENAREAWIDTH#-300)
-WindowY=162
+WindowY=184
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -150,7 +150,7 @@ KeepOnScreen=1
 [AmoledTerminal\PowerAudio]
 Active=1
 WindowX=(#SCREENAREAWIDTH#-300)
-WindowY=284
+WindowY=306
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -159,7 +159,7 @@ KeepOnScreen=1
 [AmoledTerminal\TerminalDock]
 Active=1
 WindowX=(#SCREENAREAWIDTH#-300)
-WindowY=406
+WindowY=428
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1
@@ -167,8 +167,8 @@ KeepOnScreen=1
 
 [AmoledTerminal\AudioFFT]
 Active=1
-WindowX=(#WORKAREAWIDTH#/2-154)
-WindowY=(#WORKAREAHEIGHT#-48)
+WindowX=(#SCREENAREAWIDTH#/2-154)
+WindowY=(#SCREENAREAHEIGHT#-124)
 AlwaysOnTop=0
 Draggable=1
 SnapEdges=1

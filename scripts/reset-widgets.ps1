@@ -13,11 +13,12 @@ if (-not (Test-Path $rainmeterExe)) {
     Write-Error "Rainmeter.exe not found at $rainmeterExe"
 }
 
-$scr = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
-$topY = $scr.Top + 18
-$rightX = $scr.Right - 300
-$fftX = [int]($scr.Left + ($scr.Width / 2) - 154)
-$fftY = $scr.Bottom - 48
+$scr = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+$work = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+$topY = [Math]::Max($work.Top + 18, 50)
+$rightX = $scr.Width - 300
+$fftX = [int]($scr.Width / 2 - 154)
+$fftY = $scr.Height - 124
 
 if (-not (Get-Process -Name 'Rainmeter' -ErrorAction SilentlyContinue)) {
     Start-Process explorer.exe -ArgumentList "`"$rainmeterExe`""

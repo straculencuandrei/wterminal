@@ -79,17 +79,19 @@ function reset-widgets {
     $rm = "$env:ProgramFiles\Rainmeter\Rainmeter.exe"
     if (Test-Path $rm) {
         Add-Type -AssemblyName System.Windows.Forms
-        $scr = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
-        $rx = $scr.Width - 300
-        & $rm !Move 28 28 "AmoledTerminal\HeroClock"
-        & $rm !Move 28 162 "AmoledTerminal\Weather"
-        & $rm !Move 28 270 "AmoledTerminal\Calendar"
-        & $rm !Move 28 364 "AmoledTerminal\Notes"
-        & $rm !Move $rx 28 "AmoledTerminal\SysPill"
-        & $rm !Move $rx 162 "AmoledTerminal\GpuThermals"
-        & $rm !Move $rx 284 "AmoledTerminal\PowerAudio"
-        & $rm !Move $rx 406 "AmoledTerminal\TerminalDock"
-        & $rm !Move ([int]($scr.Width / 2 - 154)) ($scr.Height - 48) "AmoledTerminal\AudioFFT"
+        $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+        $work = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+        $topY = [Math]::Max($work.Top + 18, 50)
+        $rx = $bounds.Width - 300
+        & $rm !Move 28 $topY "AmoledTerminal\HeroClock"
+        & $rm !Move 28 ($topY + 134) "AmoledTerminal\Weather"
+        & $rm !Move 28 ($topY + 242) "AmoledTerminal\Calendar"
+        & $rm !Move 28 ($topY + 336) "AmoledTerminal\Notes"
+        & $rm !Move $rx $topY "AmoledTerminal\SysPill"
+        & $rm !Move $rx ($topY + 134) "AmoledTerminal\GpuThermals"
+        & $rm !Move $rx ($topY + 256) "AmoledTerminal\PowerAudio"
+        & $rm !Move $rx ($topY + 378) "AmoledTerminal\TerminalDock"
+        & $rm !Move ([int]($bounds.Width / 2 - 154)) ($bounds.Height - 124) "AmoledTerminal\AudioFFT"
     }
 }
 function widget-settings {
