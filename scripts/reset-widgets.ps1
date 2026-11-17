@@ -14,9 +14,10 @@ if (-not (Test-Path $rainmeterExe)) {
 }
 
 $scr = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
-$rightX = $scr.Width - 300
-$fftX = [int]($scr.Width / 2 - 154)
-$fftY = $scr.Height - 48
+$topY = $scr.Top + 18
+$rightX = $scr.Right - 300
+$fftX = [int]($scr.Left + ($scr.Width / 2) - 154)
+$fftY = $scr.Bottom - 48
 
 if (-not (Get-Process -Name 'Rainmeter' -ErrorAction SilentlyContinue)) {
     Start-Process explorer.exe -ArgumentList "`"$rainmeterExe`""
@@ -24,14 +25,14 @@ if (-not (Get-Process -Name 'Rainmeter' -ErrorAction SilentlyContinue)) {
 }
 
 $layout = @(
-    @{ Cfg = 'AmoledTerminal\HeroClock';    Ini = 'HeroClock.ini';    X = 28;      Y = 28 },
-    @{ Cfg = 'AmoledTerminal\Weather';      Ini = 'Weather.ini';      X = 28;      Y = 162 },
-    @{ Cfg = 'AmoledTerminal\Calendar';     Ini = 'Calendar.ini';     X = 28;      Y = 270 },
-    @{ Cfg = 'AmoledTerminal\Notes';        Ini = 'Notes.ini';        X = 28;      Y = 364 },
-    @{ Cfg = 'AmoledTerminal\SysPill';      Ini = 'SysPill.ini';      X = $rightX; Y = 28 },
-    @{ Cfg = 'AmoledTerminal\GpuThermals';  Ini = 'GpuThermals.ini';  X = $rightX; Y = 162 },
-    @{ Cfg = 'AmoledTerminal\PowerAudio';   Ini = 'PowerAudio.ini';   X = $rightX; Y = 284 },
-    @{ Cfg = 'AmoledTerminal\TerminalDock'; Ini = 'TerminalDock.ini'; X = $rightX; Y = 406 },
+    @{ Cfg = 'AmoledTerminal\HeroClock';    Ini = 'HeroClock.ini';    X = 28;      Y = $topY },
+    @{ Cfg = 'AmoledTerminal\Weather';      Ini = 'Weather.ini';      X = 28;      Y = ($topY + 134) },
+    @{ Cfg = 'AmoledTerminal\Calendar';     Ini = 'Calendar.ini';     X = 28;      Y = ($topY + 242) },
+    @{ Cfg = 'AmoledTerminal\Notes';        Ini = 'Notes.ini';        X = 28;      Y = ($topY + 336) },
+    @{ Cfg = 'AmoledTerminal\SysPill';      Ini = 'SysPill.ini';      X = $rightX; Y = $topY },
+    @{ Cfg = 'AmoledTerminal\GpuThermals';  Ini = 'GpuThermals.ini';  X = $rightX; Y = ($topY + 134) },
+    @{ Cfg = 'AmoledTerminal\PowerAudio';   Ini = 'PowerAudio.ini';   X = $rightX; Y = ($topY + 256) },
+    @{ Cfg = 'AmoledTerminal\TerminalDock'; Ini = 'TerminalDock.ini'; X = $rightX; Y = ($topY + 378) },
     @{ Cfg = 'AmoledTerminal\AudioFFT';     Ini = 'AudioFFT.ini';     X = $fftX;   Y = $fftY }
 )
 

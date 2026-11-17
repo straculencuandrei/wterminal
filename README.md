@@ -8,9 +8,9 @@
 ![Clink](https://img.shields.io/badge/Clink-1.9-27272A?style=flat)
 ![Flow Launcher](https://img.shields.io/badge/Flow%20Launcher-2.1-0A0A0D?style=flat)
 ![Rainmeter](https://img.shields.io/badge/Rainmeter-4.5-1F2937?style=flat)
-![Windhawk](https://img.shields.io/badge/Windhawk-1.7-18181B?style=flat)
+![Seelen UI](https://img.shields.io/badge/Seelen%20UI-2.8-18181B?style=flat)
 
-A lightweight, fast Windows 11 desktop + terminal suite built around **AMOLED true black (`#000000`)**, **translucent dark-grey glass**, **Linux-style shells** (`PowerShell 7` + `cmd.exe` via `Clink`), **Starship**, **Fastfetch** (with a TrueColor rainbow `Alpha` **`W`** ASCII logo), a **Spotlight launcher** (`Flow Launcher`), a **floating pill dock** (`Windhawk`), and **9 modular desktop widgets** (`Rainmeter`, Wallpaper Engine compatible).
+A lightweight, fast Windows 11 desktop + terminal suite built around **AMOLED true black (`#000000`)**, **translucent dark-grey glass**, **Linux-style shells** (`PowerShell 7` + `cmd.exe` via `Clink`), **Starship**, **Fastfetch** (with a TrueColor rainbow `Alpha` **`W`** ASCII logo), a **Spotlight launcher** (`Flow Launcher`), a **macOS-style dock & top bar** (`Seelen UI`), and **9 modular desktop widgets** (`Rainmeter`, Wallpaper Engine compatible).
 
 ---
 
@@ -34,10 +34,12 @@ wterminal/
 │   ├── TerminalDock/               # Quick-launch pill (> wt | dir | web | cfg | rst)
 │   └── Weather/                    # Auto-located live weather via wttr.in
 ├── scripts/
-│   ├── install-tools.ps1           # Installs Windhawk, Rainmeter, Flow Launcher, and Core Temp
+│   ├── install-tools.ps1           # Installs Seelen UI, Rainmeter, Flow Launcher, and Core Temp
 │   ├── install-terminal-stack.ps1  # Installs pwsh 7, Starship, Fastfetch, eza, bat, fzf, zoxide, JetBrainsMono NF, Clink
 │   ├── reset-widgets.ps1           # Snaps all 9 desktop widgets back to default coordinates
+│   ├── setup-coretemp-background.ps1 # Configures Core Temp to run minimized in tray for live CPU °C
 │   └── apply-theme.ps1             # Deploys themes, profiles, Start Menu WT/widget shortcuts, console palette & layout
+├── seelen-ui/amoled-terminal/      # Custom AMOLED Dark-Grey CSS theme for Seelen UI (macOS dock + top bar)
 ├── terminal/
 │   ├── amoled-terminal-scheme.json # Windows Terminal AMOLED scheme, tab-bar theme & acrylic defaults
 │   ├── cmd-init.cmd                # Quote-safe cmd.exe AutoRun (Clink + Starship + Fastfetch + doskey aliases)
@@ -82,7 +84,7 @@ Rainmeter and Flow Launcher default to **`SF Pro Display`** in this theme.
 
 ### Step 4 — Deploy Everything
 ```powershell
-.\scripts\apply-theme.ps1 -ApplyTerminalTheme -SetupRainmeterLayout -DeclutterTaskbar -HideDesktopIcons
+.\scripts\apply-theme.ps1 -ApplyTerminalTheme -SetupRainmeterLayout -AutoHideTaskbar -HideDesktopIcons
 ```
 - **Using Wallpaper Engine?** The script detects `Wallpaper Engine` automatically and leaves your animated wallpaper active (`AlwaysOnTop=0` keeps widgets above it). Add `-SetStaticWallpaper` if you want the static 4K AMOLED PNG instead.
 - **To revert taskbar/desktop icon changes anytime:**
@@ -91,9 +93,10 @@ Rainmeter and Flow Launcher default to **`SF Pro Display`** in this theme.
   ```
 
 ### Step 5 — Final 1-Minute UI Activation
-1. **Windhawk (Floating Dock):**
-   - Open **Windhawk** → **Explore** → install **Windows 11 Taskbar Styler**.
-   - Go to **Settings** → click **Textual mode** (next to *Save settings*), paste [taskbar-floating-dock.json](windhawk/taskbar-floating-dock.json), and click **Save settings**.
+1. **Seelen UI (macOS Dock & Top Bar):**
+   - Launch **Seelen UI** → open **Settings** → **Themes** → select **`AMOLED Terminal`** (`@wterminal/amoled-terminal`).
+   - *(Optional)* Under **Settings → Tiling WM / Wallpaper**, disable Seelen's built-in wallpaper manager if you use **Wallpaper Engine**, and customize pinned dock apps on the bottom bar (`Weg`).
+   - *(If upgrading from Windhawk)* Open **Windhawk** → **Disable** *Windows 11 Taskbar Styler*.
 2. **Flow Launcher (`Alt+Space`):**
    - Open **Flow Launcher** → press **`Ctrl+I`** (Settings):
      - **Theme:** select **`AmoledTerminal`**.

@@ -1,0 +1,13 @@
+id: "@wterminal/amoled-terminal"
+metadata:
+  displayName: AMOLED Terminal
+  description: Dark-grey AMOLED translucent macOS dock & top bar matching wterminal.
+  tags:
+    - dark
+    - amoled
+    - weg
+    - toolbar
+styles:
+  "@seelen/weg": !include styles/weg.css
+  "@seelen/fancy-toolbar": !include styles/toolbar.css
+sharedStyles: !include shared/index.css

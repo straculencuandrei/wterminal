@@ -1,0 +1,20 @@
+:root {
+  --slu-std-fg-color: #f4f4f5;
+  --slu-std-fg-secondary-color: #a1a1aa;
+  --slu-std-fg-muted-color: #71717a;
+  --slu-std-fg-disabled-color: #52525b;
+
+  --slu-std-bg-dark-color: #000000;
+  --slu-std-bg-color: #050507;
+  --slu-std-bg-light-color: #121216;
+
+  --slu-std-ui-color: #4ade80;
+  --slu-std-ui-fg-color: #050507;
+  --slu-std-ui-hover-color: #86efac;
+
+  --slu-std-ui-hover-overlay: rgba(255, 255, 255, 0.08);
+  --slu-std-ui-pressed-overlay: rgba(255, 255, 255, 0.14);
+  --slu-std-ui-selected-overlay: rgba(74, 222, 128, 0.14);
+
+  font-family: "SF Pro Display", "Segoe UI Variable Text", sans-serif;
+}

@@ -1,0 +1,23 @@
+.ft-bar {
+  background-color: rgba(5, 5, 7, 0.84);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  color: #f4f4f5;
+  font-family: "SF Pro Display", "Segoe UI Variable Text", sans-serif;
+}
+
+.ft-bar-item.ft-bar-item-clickable {
+  border-radius: 8px;
+}
+
+.ft-bar-item.ft-bar-item-clickable:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.ft-bar-item.ft-bar-item-clickable:active {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.ft-bar-item-badge {
+  background-color: #4ade80;
+  color: #050507;
+}

@@ -9,6 +9,8 @@
     Writes the non-overlapping 9-widget Rainmeter.ini layout (AlwaysOnTop=0 for Wallpaper Engine compatibility, AudioFFT above taskbar).
 .PARAMETER DeclutterTaskbar
     Applies reversible Windows 11 taskbar declutter registry tweaks (centered icons, hide Search/Widgets/Task View).
+.PARAMETER AutoHideTaskbar
+    Auto-hides the native Windows 11 taskbar (recommended when using Seelen UI's macOS dock).
 .PARAMETER HideDesktopIcons
     Hides desktop icons for an ultra-minimal canvas (reversible via -RestoreDefaults).
 .PARAMETER SetStaticWallpaper
@@ -21,6 +23,7 @@ param(
     [switch]$ApplyTerminalTheme,
     [switch]$SetupRainmeterLayout,
     [switch]$DeclutterTaskbar,
+    [switch]$AutoHideTaskbar,
     [switch]$HideDesktopIcons,
     [switch]$SetStaticWallpaper,
     [switch]$RestoreDefaults
@@ -59,6 +62,12 @@ if ($RestoreDefaults) {
     Set-ItemProperty -Path $advKey -Name 'HideIcons' -Value 0 -Type DWord
     if (Test-Path $searchKey) {
         Set-ItemProperty -Path $searchKey -Name 'SearchboxTaskbarMode' -Value 2 -Type DWord
+    }
+    $srKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3'
+    if (Test-Path $srKey) {
+        $sr = (Get-ItemProperty $srKey).Settings
+        $sr[8] = 0x02
+        Set-ItemProperty -Path $srKey -Name 'Settings' -Value $sr -Type Binary
     }
     Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
     Write-Host 'Defaults restored.' -ForegroundColor Green
@@ -169,12 +178,27 @@ KeepOnScreen=1
     Write-Host '==> Wrote Rainmeter.ini widget layout.' -ForegroundColor Cyan
 }
 
-# 2. Deploy Flow Launcher theme
+# 2. Deploy Flow Launcher & Seelen UI themes
 $flowThemesDir = Join-Path $env:APPDATA 'FlowLauncher\Themes'
 $flowSrc = Join-Path $RepoRoot 'flow-launcher\AmoledTerminal.xaml'
 Write-Host "==> Deploying Flow Launcher theme to $flowThemesDir" -ForegroundColor Cyan
 New-Item -ItemType Directory -Path $flowThemesDir -Force | Out-Null
 Copy-Item -Path $flowSrc -Destination (Join-Path $flowThemesDir 'AmoledTerminal.xaml') -Force
+
+$seelenSrc = Join-Path $RepoRoot 'seelen-ui\amoled-terminal'
+$seelenDst = Join-Path $env:APPDATA 'com.seelen.seelen-ui\themes\amoled-terminal'
+if (Test-Path $seelenSrc) {
+    Write-Host "==> Deploying Seelen UI AMOLED theme to $seelenDst" -ForegroundColor Cyan
+    New-Item -ItemType Directory -Path $seelenDst -Force | Out-Null
+    Copy-Item -Path "$seelenSrc\*" -Destination $seelenDst -Recurse -Force
+    $seelenPkg = Get-AppxPackage 'Seelen.SeelenUI' -ErrorAction SilentlyContinue
+    if ($seelenPkg) {
+        $sluExe = Join-Path $seelenPkg.InstallLocation 'slu.exe'
+        if (Test-Path $sluExe) {
+            & $sluExe resource load theme $seelenDst 2>$null
+        }
+    }
+}
 
 # 3. Apply 4K AMOLED Wallpaper only when requested or when Wallpaper Engine isn't installed
 $wallpaperEngineInstalled = (Test-Path "${env:ProgramFiles(x86)}\Steam\steamapps\common\wallpaper_engine\wallpaper64.exe") -or (Get-Process -Name 'wallpaper64','wallpaper32','wallpaperservice64' -ErrorAction SilentlyContinue)
@@ -347,6 +371,17 @@ if ($DeclutterTaskbar) {
         Set-ItemProperty -Path $searchKey -Name 'SearchboxTaskbarMode' -Value 0 -Type DWord
     }
     $restartExplorer = $true
+}
+
+if ($AutoHideTaskbar) {
+    Write-Host '==> Enabling Windows 11 taskbar auto-hide for Seelen UI dock...' -ForegroundColor Cyan
+    $srKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StuckRects3'
+    if (Test-Path $srKey) {
+        $sr = (Get-ItemProperty $srKey).Settings
+        $sr[8] = 0x03
+        Set-ItemProperty -Path $srKey -Name 'Settings' -Value $sr -Type Binary
+        $restartExplorer = $true
+    }
 }
 
 if ($HideDesktopIcons) {
